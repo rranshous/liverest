@@ -1,0 +1,8 @@
+the idea is that we are going to have
+json objects which are editable via rest
+
+In addition to normal rest, you can make
+a socket.io connection to the rest object
+and get updates on when it changes / change
+it via msgs
+
