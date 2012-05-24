@@ -1,5 +1,3 @@
-assert = require 'assert'
-
 # setup our RESTify servr
 restify = require 'restify'
 
@@ -27,9 +25,9 @@ get_next_cell_id = (callback) ->
         callback id
 
 cell_handlers =
+
     # the get returns the cell's data
     get: (req, res, next) ->
-
         console.log "Get request"
 
         # the params should include the cell's id
@@ -49,7 +47,6 @@ cell_handlers =
         return cell_handlers.get req, res, next
 
     post: (req, res, next) ->
-
         console.log "Post request:"
         console.log req.params
 
@@ -87,7 +84,6 @@ cell_handlers =
         return cell_handlers.get req, res, next
 
     del: (req, res, next) ->
-
         console.log "Del request"
 
         # get the hash
