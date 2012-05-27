@@ -3,11 +3,11 @@
 # cell = { id: <>, k:v }
 # if _k exists it will hold the token for the event
 #  which set the data
-cells = {}
-last_token_id = 0
-next_token_id = ->
-    last_token_id += 1
-    last_token_id
+class CellsLookup extends Spine.Module
+  @include Spine.Events
+  new_token_id: =>
+    new Date().getTime()
+cells = new CellsLookup()
 
 event_handlers = 
 
@@ -23,24 +23,28 @@ event_handlers =
       # check for an outstanding set
       token_key = '_'+key
       if token_key in cell
-        # if this set is older, dont bother updating
-        if token < cell[token_key]
-          continue
-        else
-          # update the token to ours
+        # if this set is newer, update
+        if token > cell[token_key]
           cell[token_key] = token
 
       # we're good to set the value
       cell.key = value
 
     # go through cells w/ matching ids
-    for cell in (cells[id] or [])
+    (cells[id] or []).forEach (cell) =>
       set_value(cell)
 
     # go through the cells which didn't have ids
     # and this was their first set
-    for cell in (cells[token] or [])
+    (cells[token] or []).forEach (cell) =>
+      # set the value
       set_value(cell)
+      # move the cell into the id based lookup
+      cells[id] = [] unless cells[id]
+      cells[id].append(cell)
+      # remove from token based lookup
+      cells[token].remove(cell)
+      
 
 
   # handles internal / external event
@@ -60,36 +64,37 @@ event_handlers =
 
 
 # setup socket
-socket = io.connect 'http://localhost'
+socket = io.connect 'http://localhost:8080'
 
 # register socket handlers which handle updating all
 # cell values and local handlers
 for event_name, handler of event_handlers
   socket.on event_name, handler
-  cells.on event_name, handler
+  cells.bind event_name, handler
 
 # connect up handlers which push local events server side
-cells.on 'set_cell_value', (data) ->
+cells.bind 'set_cell_value', (data) ->
   socket.emit 'set_cell_value', data
 
-cells.on 'set_cell_data', (data) ->
+cells.bind 'set_cell_data', (data) ->
   socket.emit 'set_cell_data', data
 
 class Cell
   constructor: (@id) ->
+    # note our data
     @data = {}
 
   set: (key, value, token, fire = true) ->
 
     # generate a token for the set
-    token = get_next_token()
+    token = cells.new_token_id()
 
     # set the new value 
     @data[key] = value
 
     # and update the key's token
     token_key = '_'+key
-    @data[token_key] = token
+    @data[token_key] = token 
 
     # if we don't have an id yet save a ref to ourself
     # in cells token lookup
@@ -98,7 +103,7 @@ class Cell
         cells[token_key] = []).append(this)
 
     # let the world know
-    cells.fire 'set_cell_value',
+    cells.trigger 'set_cell_value',
       id: @id,
       key: key,
       value: value,
@@ -110,16 +115,21 @@ class Cell
   set_data: (data) ->
 
     # generate token
-    token = get_next_token()
+    token = cells.new_token_id()
 
     # update ourself
     @set k, v, token, false for k, v of data
 
     # let the world know
-    cells.fire 'set_cell_data',
+    cells.trigger 'set_cell_data',
       id: @id,
       data: data,
       token: token
 
   clear: () ->
     @set_data({})
+
+
+# put our app into the global namespace
+app = @app = {}
+app.cells = cells

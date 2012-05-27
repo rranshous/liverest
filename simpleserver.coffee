@@ -1,12 +1,19 @@
-## STATIC SERVER
-file = new require('node-static').Server './public'
-require('http').createServer req, resp ->
-  req.addListener 'end', ->
-    file.serve(req, resp)
+# Web server
+io = require 'socket.io'
+express = require 'express'
+app = express.createServer()
+# host our statics
+#console.info "making static #{__dirname + '/'}"
+app.use express.static __dirname + '/'
+# socket IO layer
+io = io.listen app
+# open up for XHR
+io.set 'origins', '*'
+# listening
+app.listen 8080
 
-# our lookup of cell data
-cells = {}
 
+# helper method for cell ids
 last_cell_id = 0
 next_cell_id = ->
   last_cell_id += 1
@@ -54,15 +61,16 @@ set_cell_data = (id, data, callback) ->
   callback id, data
 
 
+# simple methods for accessing cell's data
 get_cell_data = (id, callback) ->
   callback id, cells.id or {}
-
 get_cell_value = (id, key, callback) ->
   callback id, cells?.id?.key
 
-io = require('socket.io').listen 8080
+# and all the socket handlers
 io.sockets.on 'connection', (socket) ->
   
+  # handle the client setting values
   socket.on 'set_cell_value', (data) ->
     set_cell_value data.id, data.key, data.value, (id, key, value, old_value) =>
       socket.emit 'set_cell_value', 
@@ -72,6 +80,7 @@ io.sockets.on 'connection', (socket) ->
         value: value,
         token: data?.token
 
+  # handle the client setting multiple values
   socket.on 'set_cell_data', (data) ->
     set_cell_data data.id, data.data, (id, data, old_data) =>
       socket.emit 'set_cell_data',
@@ -81,6 +90,7 @@ io.sockets.on 'connection', (socket) ->
         old_data: old_data,
         token: data?.token
 
+  #client wants a value
   socket.on 'get_cell_value', (data) ->
     get_cell_value data.id, data.key, (id, value) =>
       socket.emit 'get_cell_value',
@@ -90,7 +100,7 @@ io.sockets.on 'connection', (socket) ->
         value: value,
         token: data?.token
 
-  socket.on 'set_cell_data', (data) ->
+  socket.on 'get_cell_data', (data) ->
     get_cell_data data.id, (id, data) =>
       socket.emit 'get_cell_data',
         success: true,
