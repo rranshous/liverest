@@ -64,20 +64,25 @@ event_handlers =
 
 
 # setup socket
-socket = io.connect 'http://localhost:8080'
+socket = io.connect()
 
-# register socket handlers which handle updating all
-# cell values and local handlers
-for event_name, handler of event_handlers
-  socket.on event_name, handler
-  cells.bind event_name, handler
+socket.on 'connect', ->
 
-# connect up handlers which push local events server side
-cells.bind 'set_cell_value', (data) ->
-  socket.emit 'set_cell_value', data
+  console.log 'connected!'
 
-cells.bind 'set_cell_data', (data) ->
-  socket.emit 'set_cell_data', data
+  # register socket handlers which handle updating all
+  # cell values and local handlers
+  for event_name, handler of event_handlers
+    socket.on event_name, handler
+    cells.bind event_name, handler
+
+  # connect up handlers which push local events server side
+  cells.bind 'set_cell_value', (data) ->
+    socket.emit 'set_cell_value', data
+
+  cells.bind 'set_cell_data', (data) ->
+    socket.emit 'set_cell_data', data
+
 
 class Cell
   constructor: (@id) ->
@@ -99,8 +104,8 @@ class Cell
     # if we don't have an id yet save a ref to ourself
     # in cells token lookup
     unless @id
-      (if cells[token_key] then cells[token_key] else =>
-        cells[token_key] = []).append(this)
+      cells[token_key] = [] unless cells[token_key]
+      cells[token_key].push(this)
 
     # let the world know
     cells.trigger 'set_cell_value',
@@ -133,3 +138,4 @@ class Cell
 # put our app into the global namespace
 app = @app = {}
 app.cells = cells
+app.Cell = Cell

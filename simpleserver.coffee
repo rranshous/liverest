@@ -1,23 +1,21 @@
 # Web server
 io = require 'socket.io'
 express = require 'express'
-app = express.createServer()
+app = express()
+server = app.listen 8080
 # host our statics
 #console.info "making static #{__dirname + '/'}"
 app.use express.static __dirname + '/'
 # socket IO layer
-io = io.listen app
-# open up for XHR
-io.set 'origins', '*'
-# listening
-app.listen 8080
-
+io = io.listen server
 
 # helper method for cell ids
 last_cell_id = 0
 next_cell_id = ->
   last_cell_id += 1
   last_cell_id
+
+cells = {}
 
 # set single cell value
 # callback: id, key, value, old_value
@@ -36,7 +34,7 @@ set_cell_value = (id, key, value, emit = true, callback) ->
       id : id,
       key : key,
       old_value : old_value,
-      new_value : new_value
+      new_value : value
   callback id, key, value, old_value
 
 # set multiple values for a cell
@@ -69,7 +67,7 @@ get_cell_value = (id, key, callback) ->
 
 # and all the socket handlers
 io.sockets.on 'connection', (socket) ->
-  
+
   # handle the client setting values
   socket.on 'set_cell_value', (data) ->
     set_cell_value data.id, data.key, data.value, (id, key, value, old_value) =>
