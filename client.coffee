@@ -1,3 +1,4 @@
+Array::remove = (e) -> @[t..t] = [] if (t = @indexOf(e)) > -1
 
 # cells = { id: [{}] }
 # cell = { id: <>, k:v }
@@ -19,32 +20,44 @@ event_handlers =
     value = data.value
     token = data.token
 
+    console.log "handler [set_cell_value] #{id} #{key} #{value} #{token}"
+
     set_value = (cell) ->
       # check for an outstanding set
       token_key = '_'+key
       if token_key in cell
         # if this set is newer, update
         if token > cell[token_key]
+          console.log "set_value token new #{cell[token_key]} #{token}"
           cell[token_key] = token
+        else
+          console.log "set_value token [#{token}] old"
+          return
 
       # we're good to set the value
+      console.log "set_value: #{key} #{value}"
       cell.key = value
 
     # go through cells w/ matching ids
-    (cells[id] or []).forEach (cell) =>
+    console.log "going through id cells #{cells[id] or []}"
+    (cells[id] or []).forEach (cell, i, l) =>
       set_value(cell)
 
     # go through the cells which didn't have ids
     # and this was their first set
-    (cells[token] or []).forEach (cell) =>
+    console.log "going through token cells #{cells[token] or []}"
+    (cells[token] or []).forEach (cell, i, l) =>
       # set the value
       set_value(cell)
-      # move the cell into the id based lookup
-      cells[id] = [] unless cells[id]
-      cells[id].append(cell)
-      # remove from token based lookup
-      cells[token].remove(cell)
-      
+      if id
+        console.log "cell now has id, updating"
+        # move the cell into the id based lookup
+        cells[id] = [] unless cells[id]
+        cells[id].push(cell)
+        # remove from token based lookup
+        cells[token].remove(cell)
+        unless cells[token].length
+          delete cells[token]
 
 
   # handles internal / external event
@@ -53,6 +66,8 @@ event_handlers =
     id = data.id
     token = id.token
     new_values = data.new_values
+
+    console.log "set_cell_data #{id} #{new_value} #{token}"
 
     # go through the key / values leaning on other handler
     for k, v of new_values
@@ -78,9 +93,11 @@ socket.on 'connect', ->
 
   # connect up handlers which push local events server side
   cells.bind 'set_cell_value', (data) ->
+    console.log "cell set_cell_value => server"
     socket.emit 'set_cell_value', data
 
   cells.bind 'set_cell_data', (data) ->
+    console.log "cell set_cell_data => server"
     socket.emit 'set_cell_data', data
 
 
@@ -91,8 +108,11 @@ class Cell
 
   set: (key, value, token, fire = true) ->
 
+    console.log "cell [set] #{key} #{value} #{token} #{fire}"
+
     # generate a token for the set
-    token = cells.new_token_id()
+    token = cells.new_token_id() unless token
+    console.log "cell [set] token #{token}"
 
     # set the new value 
     @data[key] = value
@@ -104,10 +124,12 @@ class Cell
     # if we don't have an id yet save a ref to ourself
     # in cells token lookup
     unless @id
-      cells[token_key] = [] unless cells[token_key]
-      cells[token_key].push(this)
+      cells[token] = [] unless cells[token]
+      cells[token].push(this)
+      console.log "cell has no id, pushing to token key list #{cells[token]}"
 
     # let the world know
+    console.log "cells firing set_cell_value"
     cells.trigger 'set_cell_value',
       id: @id,
       key: key,

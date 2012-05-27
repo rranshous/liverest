@@ -6,6 +6,13 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
+  Array.prototype.remove = function(e) {
+    var t, _ref;
+    if ((t = this.indexOf(e)) > -1) {
+      return ([].splice.apply(this, [t, t - t + 1].concat(_ref = [])), _ref);
+    }
+  };
+
   CellsLookup = (function(_super) {
 
     __extends(CellsLookup, _super);
@@ -35,26 +42,40 @@
       key = data.key;
       value = data.value;
       token = data.token;
+      console.log("handler [set_cell_value] " + id + " " + key + " " + value + " " + token);
       set_value = function(cell) {
         var token_key;
         token_key = '_' + key;
         if (__indexOf.call(cell, token_key) >= 0) {
           if (token > cell[token_key]) {
+            console.log("set_value token new " + cell[token_key] + " " + token);
             cell[token_key] = token;
+          } else {
+            console.log("set_value token [" + token + "] old");
+            return;
           }
         }
+        console.log("set_value: " + key + " " + value);
         return cell.key = value;
       };
-      (cells[id] || []).forEach(function(cell) {
+      console.log("going through id cells " + (cells[id] || []));
+      (cells[id] || []).forEach(function(cell, i, l) {
         return set_value(cell);
       });
-      return (cells[token] || []).forEach(function(cell) {
+      console.log("going through token cells " + (cells[token] || []));
+      return (cells[token] || []).forEach(function(cell, i, l) {
         set_value(cell);
-        if (!cells[id]) {
-          cells[id] = [];
+        if (id) {
+          console.log("cell now has id, updating");
+          if (!cells[id]) {
+            cells[id] = [];
+          }
+          cells[id].push(cell);
+          cells[token].remove(cell);
+          if (!cells[token].length) {
+            return delete cells[token];
+          }
         }
-        cells[id].append(cell);
-        return cells[token].remove(cell);
       });
     },
     set_cell_data: function(data) {
@@ -62,6 +83,7 @@
       id = data.id;
       token = id.token;
       new_values = data.new_values;
+      console.log("set_cell_data " + id + " " + new_value + " " + token);
       _results = [];
       for (k in new_values) {
         v = new_values[k];
@@ -87,9 +109,11 @@
       cells.bind(event_name, handler);
     }
     cells.bind('set_cell_value', function(data) {
+      console.log("cell set_cell_value => server");
       return socket.emit('set_cell_value', data);
     });
     return cells.bind('set_cell_data', function(data) {
+      console.log("cell set_cell_data => server");
       return socket.emit('set_cell_data', data);
     });
   });
@@ -106,16 +130,22 @@
       if (fire == null) {
         fire = true;
       }
-      token = cells.new_token_id();
+      console.log("cell [set] " + key + " " + value + " " + token + " " + fire);
+      if (!token) {
+        token = cells.new_token_id();
+      }
+      console.log("cell [set] token " + token);
       this.data[key] = value;
       token_key = '_' + key;
       this.data[token_key] = token;
       if (!this.id) {
-        if (!cells[token_key]) {
-          cells[token_key] = [];
+        if (!cells[token]) {
+          cells[token] = [];
         }
-        cells[token_key].push(this);
+        cells[token].push(this);
+        console.log("cell has no id, pushing to token key list " + cells[token]);
       }
+      console.log("cells firing set_cell_value");
       return cells.trigger('set_cell_value', {
         id: this.id,
         key: key,
