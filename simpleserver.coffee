@@ -1,6 +1,11 @@
+
+requirejs = require('requirejs')
+
+requirejs ['spine', 'socket.io', 'express','mediator', 'cell' ],
+(spine, io, express, mediator, cell) ->
+
+#### HOSTING #####
 # Web server
-io = require 'socket.io'
-express = require 'express'
 app = express()
 server = app.listen 8080
 # host our statics
@@ -8,18 +13,13 @@ server = app.listen 8080
 app.use express.static __dirname + '/'
 # socket IO layer
 io = io.listen server
+#### END HOSTING ####
 
 # helper method for cell ids
 last_cell_id = 0
 next_cell_id = ->
   last_cell_id += 1
   last_cell_id
-
-Spine = require 'spine'
-class CellsLookup extends Spine.Module
-  @include Spine.Events
-cells = new CellsLookup()
-
 
 # set single cell value
 # callback: id, key, value, old_value

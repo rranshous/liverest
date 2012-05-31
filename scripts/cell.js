@@ -13,7 +13,6 @@
 
       function Cell(id) {
         this.id = id;
-        this.data = {};
         this.tokens = {};
       }
 
@@ -21,44 +20,64 @@
         return new Date().getTime();
       };
 
-      Cell.prototype.set = function(key, value, token, fire) {
+      Cell.prototype.set = function(key, value, token, fire, callback) {
         if (fire == null) {
           fire = true;
         }
+        if (callback == null) {
+          callback = function() {};
+        }
         console.log("cell [set] " + key + " " + value + " " + token + " " + fire);
-        this.data[key] = value;
         if (!((token != null) || token > this.tokens[key])) {
+          callback(false, key, value);
           return;
         }
         token = this.tokens[key] = this._new_token_id();
-        if (fire) {
-          console.log("cells firing set_cell_value");
-          return this.trigger('set_cell_value', {
-            key: key,
-            value: value,
-            token: token
-          });
+        return this._set(key, value, function() {
+          if (fire) {
+            console.log("cells firing set_cell_value");
+            this.fire('set_cell_value', {
+              key: key,
+              value: value,
+              token: token
+            });
+          }
+          return callback(true, key, value);
+        });
+      };
+
+      Cell.prototype._set = function(key, value, callback) {
+        if (callback == null) {
+          callback = function() {};
         }
+        return callback(true, key, value);
       };
 
       Cell.prototype.get = function(key) {
         return this.data[key];
       };
 
-      Cell.prototype.set_data = function(data) {
-        var k, token, v;
+      Cell.prototype.set_data = function(data, callback) {
+        var done, token, total;
+        if (callback == null) {
+          callback = function() {};
+        }
         if (!(data != null ? data.length : void 0)) {
           return;
         }
         token = this._new_token_id();
-        for (k in data) {
-          v = data[k];
-          this.set(k, v, token, false);
-        }
-        return this.trigger('set_cell_data', {
-          id: this.id,
-          data: data,
-          token: token
+        total = data.length;
+        done = 0;
+        return this.set(k, v, token, false, function(success, key, value) {
+          done += 1;
+          if (total === done) {
+            callback(true, data);
+            return this.fire('set_cell_data', {
+              id: this.id,
+              data: data,
+              token: token
+            });
+          }
         });
       };
 
