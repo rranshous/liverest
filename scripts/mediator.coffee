@@ -1,6 +1,6 @@
 
-require ['spine'], (spine) ->
+define ['spine'], (spine) ->
 
-  class Mediator extends Spine.Model
+  class Mediator extends Spine.Module
     @extend Spine.Events
 
