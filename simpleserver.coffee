@@ -18,8 +18,6 @@ next_cell_id = ->
 Spine = require 'spine'
 class CellsLookup extends Spine.Module
   @include Spine.Events
-  new_token_id: =>
-    new Date().getTime()
 cells = new CellsLookup()
 
 
@@ -32,9 +30,8 @@ set_cell_value = (id, key, value, emit, callback) ->
     id = next_cell_id()
     console.log "getting next id #{id}"
   # setup some space for the cell if it's new
-  cell = if cells[id]? then cells[id] else ->
-    cells[id] = {}
-    cells[id]
+  cells[id] = {} unless cells[id]?
+  cell = cells[id]
   old_value = cell[key]
   cell[key] = value
   # fire event if requested
