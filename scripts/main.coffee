@@ -6,8 +6,11 @@ requirejs.config
 
 requirejs ['overrides', 'mediator', 'spine', 'cell'],
 
-(overrides, mediator, spine) ->
-  console.log
+(overrides, mediator, spine, cell) ->
+
+  # put into global for debuging
+  @app = 
     overrides: overrides
     mediator: mediator
     spine: spine
+    cell: cell

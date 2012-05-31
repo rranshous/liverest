@@ -4,20 +4,27 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define(['spine'], function(spine) {
-    var Mediator;
-    return Mediator = (function(_super) {
+    var Mediator, mediator;
+    Mediator = (function(_super) {
 
       __extends(Mediator, _super);
 
-      function Mediator() {
-        return Mediator.__super__.constructor.apply(this, arguments);
-      }
-
       Mediator.extend(Spine.Events);
+
+      function Mediator() {}
+
+      Mediator.prototype.on = Mediator.bind;
+
+      Mediator.prototype.un = Mediator.unbind;
+
+      Mediator.prototype.fire = Mediator.trigger;
+
+      Mediator.prototype.first = Mediator.one;
 
       return Mediator;
 
-    })(Spine.Module);
+    })(spine.Module);
+    return mediator = new Mediator();
   });
 
 }).call(this);
