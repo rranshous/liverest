@@ -1,8 +1,8 @@
 
 requirejs = require('requirejs')
 
-requirejs ['spine', 'socket.io', 'express','mediator', 'cell' ],
-(spine, io, express, mediator, cell) ->
+requirejs ['spine', 'socket.io', 'express','mediator', 'mediator_shim', 'cell' ],
+(spine, io, express, mediator, mediator_shim, cell) ->
 
   PORT = 8080 # what port to host on
   AUTHORITY = true # are we a cell authority ?
@@ -17,6 +17,9 @@ requirejs ['spine', 'socket.io', 'express','mediator', 'cell' ],
 
   # when a new client connects we are going to hook it up to the mediator
   io.socket.on 'connection', (socket) ->
+
+    # update the socket so that it has better (internal) event support
+    mediator_shim.instance_extend socket
 
     # when an event comes in, it needs to go through the mediator
     socket.on -> true, mediator.fire.curry()

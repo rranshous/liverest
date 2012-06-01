@@ -10,6 +10,6 @@ define ->
     constructor_args = arguments[..]
     ->
       func_args = arguments[..]
-      func.apply @, constructor_args.concat(func_args)
+      func.apply @, constructor_args.concat func_args
 
   return {}
