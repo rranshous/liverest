@@ -89,7 +89,7 @@ define ->
 
       # let the base class do it's thing
       # TODO: figure out if i can do *args
-      _super.apply super, args
+      _super.apply @, args
 
     _unbind: (_super, ev, callback) ->
 
