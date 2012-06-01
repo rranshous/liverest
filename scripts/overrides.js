@@ -11,10 +11,10 @@
     Function.prototype.curry = function() {
       var constructor_args, func;
       func = this;
-      constructor_args = arrSlice.call(arguments);
+      constructor_args = arguments.slice(0);
       return function() {
         var func_args;
-        func_args = arrSlice.call(arguments);
+        func_args = arguments.slice(0);
         return func.apply(this, constructor_args.concat(func_args));
       };
     };
