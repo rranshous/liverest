@@ -3,7 +3,7 @@
 # a client can be considered to care about a cell if they have set
 # the cell's value or initialized a cell
 
-def ['mediator'], (mediator) ->
+define ['mediator'], (mediator) ->
 
   # the mediator is going to be putting off events on behalf of cells
   # we care about init and set events
@@ -36,9 +36,9 @@ def ['mediator'], (mediator) ->
       (@tracked[id] or []).forEach callback
       return @
 
-    first: (id, callback) ->
+    first: (id) ->
 
-      callback if @tracked[id]?.length > 0 then @tracked[id][0]
+      if @tracked[id]?.length > 0 then @tracked[id][0]
 
     remove: (id, obj) ->
 
@@ -58,6 +58,3 @@ def ['mediator'], (mediator) ->
         obj: obj
 
       return @
-
-    # send all events through the mediator
-    fire: mediator.fire
