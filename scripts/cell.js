@@ -2,8 +2,7 @@
 (function() {
   var _last_cell_id,
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __slice = [].slice;
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   _last_cell_id = 0;
 
@@ -119,23 +118,31 @@
         return _results;
       };
 
-      Cell.prototype.clear = function(token) {
-        var CLEAR, k, _i, _len, _ref, _results;
-        CLEAR = -123.312;
-        _ref = this.data;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          k = _ref[_i];
-          _results.push(this.set_value(k, CLEAR));
+      Cell.prototype.clear = function(token, callback) {
+        var cleared, k, v, _ref, _ref1;
+        if (callback == null) {
+          callback = function() {};
         }
-        return _results;
+        cleared = {};
+        _ref = this.data;
+        for (k in _ref) {
+          v = _ref[k];
+          if (!(token != null) || ((_ref1 = this.tokens) != null ? _ref1[k] : void 0) < v) {
+            cleared[k] = v;
+            delete this.data[k];
+          }
+        }
+        this.fire('cell:clear', {
+          token: token
+        });
+        return callback(cleared);
       };
 
       Cell.prototype.handle_set_value = function(data) {
         if (this.id !== id) {
           return;
         }
-        return this.set_value(data);
+        return this.set(data);
       };
 
       Cell.prototype.handle_set_data = function(data) {
@@ -145,11 +152,7 @@
         return this.set_data(data);
       };
 
-      Cell.prototype.fire = function() {
-        var args;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        return mediator.fire.apply(mediator, args);
-      };
+      Cell.prototype.fire = mediator.fire;
 
       return Cell;
 

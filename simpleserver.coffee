@@ -2,10 +2,8 @@
 requirejs = require('requirejs')
 
 requirejs [
-  'spine', 
   'socket.io', 'express',
   'liverest'
-  'mediator', 'cell', 'socketio_handler'
 ],
 
 (spine,

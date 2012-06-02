@@ -17,7 +17,7 @@ define ['mediator', 'socket_cell_tracker'], (mediator, socket_cell_tracker) ->
   # if the cell's event has both a connection obj and an id
   # than it's good to track
   add_tracking = (event_data) =>
-    if event_data.__connection:
+    if event_data.__connection
       socket_cell_tracker.track event_data.id, event_data.__connection
 
   # we want to sit on all the cell events which would mean a client

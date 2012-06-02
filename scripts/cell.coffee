@@ -121,7 +121,7 @@ define ['spine','mediator'], (spine, mediator) ->
       # the given token is greater
       cleared = {}
       for k, v of @data
-        if not token? or @tokens?[k] < v:
+        if not token? or @tokens?[k] < v
           cleared[k] = v
           delete @data[k]
 
