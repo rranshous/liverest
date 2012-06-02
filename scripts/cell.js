@@ -2,7 +2,8 @@
 (function() {
   var _last_cell_id,
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __slice = [].slice;
 
   _last_cell_id = 0;
 
@@ -17,7 +18,9 @@
       function Cell(id) {
         this.id = id;
         this.tokens = {};
-        this.fire;
+        this.fire('cell:init', {
+          id: this.id
+        });
       }
 
       Cell._new_cell_id = function() {
@@ -28,9 +31,13 @@
         return '' + Date().getTime() + (this.id || '');
       };
 
-      Cell.prototype.set = function(key, value, token, fire) {
+      Cell.prototype.set = function(key, value, token, fire, callback) {
+        var _this = this;
         if (fire == null) {
           fire = true;
+        }
+        if (callback == null) {
+          callback = function() {};
         }
         console.log("cell [set] " + key + " " + value + " " + token + " " + fire);
         if (!((token != null) || token > this.tokens[key])) {
@@ -41,7 +48,7 @@
         return this._set(key, value, function() {
           if (fire) {
             console.log("cells firing set_cell_value");
-            this.fire('set_cell_value', {
+            _this.fire('cell:set_value', {
               key: key,
               value: value,
               token: token
@@ -63,7 +70,8 @@
       };
 
       Cell.prototype.set_data = function(data, callback) {
-        var done, token, total;
+        var done, token, total,
+          _this = this;
         if (callback == null) {
           callback = function() {};
         }
@@ -77,8 +85,8 @@
           done += 1;
           if (total === done) {
             callback(true, data);
-            return this.fire('set_cell_data', {
-              id: this.id,
+            return _this.fire('cell:set_data', {
+              id: _this.id,
               data: data,
               token: token
             });
@@ -88,6 +96,12 @@
 
       Cell.prototype.clear = function() {
         return this.set_data({});
+      };
+
+      Cell.prototype.fire = function() {
+        var args;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        return mediator.fire.apply(mediator, args);
       };
 
       return Cell;

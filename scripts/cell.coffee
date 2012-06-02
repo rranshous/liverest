@@ -88,10 +88,10 @@ define ['spine','mediator'], (spine, mediator) ->
             token: token
 
     # clears all the cell's values
-    clear: () ->
+    clear: ->
       @set_data {}
 
     # over ride fire so all events go to the mediator
-    fire: (args..) ->
+    fire: (args...) ->
       # TODO: figure out if i can do *args
       mediator.fire.apply mediator, args

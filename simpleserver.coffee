@@ -22,12 +22,12 @@ requirejs ['spine', 'socket.io', 'express','mediator', 'mediator_shim', 'cell' ]
     mediator_shim.instance_extend socket
 
     # when an event comes in, it needs to go through the mediator
-    socket.on -> true, mediator.fire.curry()
+    socket.on (-> true), mediator.fire.curry()
     
     # when the mediator puts off an event, we need to check if
     # has to do with a cell this socket cares about, if so relay
     # the event to the socket
-    mediator.on
+    mediator.on \
 
       # this function checks if the event is one the socket will care about
       (event, data, r) =>
@@ -36,7 +36,7 @@ requirejs ['spine', 'socket.io', 'express','mediator', 'mediator_shim', 'cell' ]
         if data.id
           # to figure out if we care check the list of the sockets tracked cells
           socket.get 'tracking_cells', (err, cells) =>
-            r(true) if data.id in cells else r(false)
+            r(true) if data.id in (cells or []) else r(false)
 
         # we dont care about the event if it has no id
         else
