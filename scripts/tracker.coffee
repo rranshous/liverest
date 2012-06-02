@@ -23,6 +23,11 @@ def ['mediator'], (mediator) ->
       # add something to be tracked
       @tracked[id] = [] unless id in @tracked
       @tracked[id].push(obj) unless obj in @tracked[id]
+
+      mediator.fire 'tracker:add',
+        id: id,
+        obj: obj
+
       return @
 
     forEach: (id, callback) ->
@@ -41,5 +46,18 @@ def ['mediator'], (mediator) ->
       return unless obj? and id?
 
       # remove a tracked item by id
-      @tracked[id]?.remove(obj)
-      @
+      # first check if its there
+      found = obj in @tracked[id]
+
+      # remove it if found
+      @tracked[id]?.remove(obj) if found
+
+      # let the world know (if found)
+      mediator.fire 'tracker:remove',
+        id: id,
+        obj: obj
+
+      return @
+
+    # send all events through the mediator
+    fire: mediator.fire

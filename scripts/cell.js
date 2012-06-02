@@ -90,7 +90,7 @@
       };
 
       Cell.prototype.set_data = function(data, callback) {
-        var done, token, total,
+        var done, k, token, total, v, _results,
           _this = this;
         if (callback == null) {
           callback = function() {};
@@ -101,21 +101,34 @@
         token = this._new_token_id();
         total = data.length;
         done = 0;
-        return this.set(k, v, token, false, function(success, key, value) {
-          done += 1;
-          if (total === done) {
-            callback(true, data);
-            return _this.fire('cell:set_data', {
-              id: _this.id,
-              data: data,
-              token: token
-            });
-          }
-        });
+        _results = [];
+        for (k in data) {
+          v = data[k];
+          _results.push(this.set(k, v, token, false, function(success, key, value) {
+            done += 1;
+            if (total === done) {
+              callback(true, data);
+              return _this.fire('cell:set_data', {
+                id: _this.id,
+                data: data,
+                token: token
+              });
+            }
+          }));
+        }
+        return _results;
       };
 
-      Cell.prototype.clear = function() {
-        return this.set_data({});
+      Cell.prototype.clear = function(token) {
+        var CLEAR, k, _i, _len, _ref, _results;
+        CLEAR = -123.312;
+        _ref = this.data;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          k = _ref[_i];
+          _results.push(this.set_value(k, CLEAR));
+        }
+        return _results;
       };
 
       Cell.prototype.handle_set_value = function(data) {

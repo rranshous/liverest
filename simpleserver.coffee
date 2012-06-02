@@ -29,8 +29,9 @@ requirejs [
     mediator.instance_extend socket
 
     # when an event comes in, it needs to go through the mediator
-    socket.on (e,d,r) -> r(true), mediator.fire
-    
+    r_true = 
+    socket.on ((e,d,r) -> r(true)), mediator.fire
+
     # when the mediator puts off an event, we need to check if
     # has to do with a cell this socket cares about, if so relay
     # the event to the socket
@@ -62,6 +63,9 @@ requirejs [
   # which care about them
   socket_cell_tracker = new Tracker()
 
+  # tracker for associating cell's w/ their id
+  cells_id_tracker = new Tracker()
+
   # if the cell's event has both a connection obj and an id
   # than it's good to track
   add_tracking = (event_data) =>
@@ -75,24 +79,33 @@ requirejs [
   mediator.on 'cell:set_data', add_tracking
   mediator.on 'cell:init', add_tracking
 
-  
+  # if an init event comes though, set up a new cell
+  setup_cell = (data) =>
+    # if we already have a cell for this id or the
+    # cell doesn't have an ID, not worth tracking
+    unless cell_id_tracker.first(data.id) or not data.id?
+      cell = new Cell data
+      cells_id_tracker.track cell.id, cell
+
+  # we subscribe to all of these events b/c we can't
+  # be sure at what point an id will be assigned
+  mediator.on 'cell:init', setup_cell
+  mediator.on 'cell:set_value', setup_cell
+  mediator.on 'cell:set_data', setup_cell
+
   # if a client init's a cell and it has an id, than we want
   # to send a snapshot of the data to the client as a set.
   # we'll use 0 as the token so that the client can tell it's
   # the current saved state, but that any event it may have
   # received since initing the cell is higher precident
-  broadcast_cell_state = (to_obj, id) =>
+  fire_cell_state = (to_obj, id) =>
     get_cell id, (cell) =>
-      if cell
+      if cell?
         to_obj.fire 'cell:set_data', 
           id: id,
           token: 0,
           data: cell.get_data()
     
   meditor.on 'cell:init', (data) =>
-    broadcast_cell_state socket, id
+    fire_cell_state socket, id
 
-
-  # if an init event comes though, set up a new cell
-  meditor.on 'cell:init', (data) =>
-    setup_cell data

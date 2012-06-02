@@ -100,35 +100,50 @@ define ['spine','mediator'], (spine, mediator) ->
       done = 0
 
       # update ourself, don't emit
-      @set k, v, token, false, (success, key, value) =>
-        done += 1
+      for k,v of data
+        @set k, v, token, false, (success, key, value) =>
+          done += 1
 
-        # did we finish ?
-        if total == done
-          callback true, data
+          # did we finish ?
+          if total == done
+            callback true, data
 
-          # let the world know
-          @fire 'cell:set_data',
-            id: @id,
-            data: data,
-            token: token
+            # let the world know
+            @fire 'cell:set_data',
+              id: @id,
+              data: data,
+              token: token
 
     # clears all the cell's values
-    clear: ->
-      @set_data {}
+    clear: (token, callback= ->) ->
+ 
+      # clear any keys for which
+      # the given token is greater
+      cleared = {}
+      for k, v of @data
+        if not token? or @tokens?[k] < v:
+          cleared[k] = v
+          delete @data[k]
+
+      # let the world know
+      @fire 'cell:clear',
+        token: token
+
+      # let the callback know what
+      # we removed
+      callback(cleared)
+
 
     # handles events we receive about cell updates
     handle_set_value: (data) ->
       # we only pay attention to events which have to do with us
       return unless @id == id
-      @set_value data
+      @set data
 
     handle_set_data: (data) ->
       return unless @id == id
       @set_data data
 
-    # over ride fire so all events go to the mediator
-    fire: (args...) ->
-      # TODO: figure out if i can do *args
-      mediator.fire.apply mediator, args
+    # send all events through the mediator
+    fire: mediator.fire
 
