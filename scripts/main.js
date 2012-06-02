@@ -10,13 +10,6 @@
     }
   });
 
-  requirejs(['overrides', 'mediator', 'spine', 'cell'], function(overrides, mediator, spine, cell) {
-    return this.app = {
-      overrides: overrides,
-      mediator: mediator,
-      spine: spine,
-      cell: cell
-    };
-  });
+  requirejs([], function() {});
 
 }).call(this);

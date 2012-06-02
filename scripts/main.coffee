@@ -4,13 +4,5 @@ requirejs.config
       deps: [],
       exports: 'Spine'
 
-requirejs ['overrides', 'mediator', 'spine', 'cell'],
-
-(overrides, mediator, spine, cell) ->
-
-  # put into global for debuging
-  @app = 
-    overrides: overrides
-    mediator: mediator
-    spine: spine
-    cell: cell
+# nothing to see here
+requirejs [], ->

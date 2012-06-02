@@ -4,6 +4,7 @@ requirejs = require('requirejs')
 requirejs [
   'spine', 
   'socket.io', 'express',
+  'liverest'
   'mediator', 'cell', 'socketio_handler'
 ],
 
@@ -12,7 +13,6 @@ requirejs [
  mediator, Cell, socketio_handler) ->
 
   PORT = 8080 # what port to host on
-  AUTHORITY = true # are we a cell authority ?
 
   # Setup our HTTP host
   http_app = express()
@@ -26,4 +26,4 @@ requirejs [
   # the handler makes sure the events coming in on the sockets
   # get pushed through mediator, also mediator events
   # which pertain to connected sockets get pushed out
-  socketio_handler io
+  liverest.add_socketio_connection(io)
