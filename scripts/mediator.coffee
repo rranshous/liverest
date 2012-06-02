@@ -1,5 +1,5 @@
 
-define ['mediator_shim', 'spine'], (spine) ->
+define ['spine'], (spine) ->
 
   class Condition
     constructor: (@fn, @callback) ->
@@ -30,7 +30,7 @@ define ['mediator_shim', 'spine'], (spine) ->
         for attr in ['addListener', 'bind', 'on']
           if obj::[attr]
             obj::['__'+attr] = obj::[attr]
-            obj::[fn] = @_bind.curry(obj::['__'+attr])
+          obj::[fn] = @_bind.curry(obj::['__'+attr])
 
     # sometimes we already have an instantiated event
     # obj we want to extend, this helps us do that
@@ -45,7 +45,7 @@ define ['mediator_shim', 'spine'], (spine) ->
         for attr in ['addListener', 'bind', 'on']
           if obj[attr]?
             obj['__'+attr] = obj[attr]
-            obj[fn] = @_bind.curry(obj['__'+attr])
+          obj[fn] = @_bind.curry(obj['__'+attr])
 
     # update bind so that instead of an event name
     # we can define a function which calls a callback

@@ -4,16 +4,38 @@ _last_cell_id = 0
 
 define ['spine','mediator'], (spine, mediator) ->
 
+  # only pass on to callback data which @ least
+  # matches our filter (doesn't have to be exact)
+  data_filter = (filter_data, callback) ->
+    (data) =>
+      for k, v of filter_data
+        unless data[k] == v
+          return
+      callback data
+
   class Cell extends Spine.Module
     @extend Spine.Events
 
-    constructor: (@id) ->
+    constructor: (data) ->
+
+      # grab an id if any
+      @id = if typeof data == 'number' then data else data.id
+
       # store a lookup of when it was set
       @tokens = {}
 
       # let the world know we're here
       @fire 'cell:init',
         id: @id
+
+      # hook up to the mediator so that any events
+      # which come through and update our data update us
+      mediator.on 'cell:set_data', @handle_set_data
+      mediator.on 'cell:get_data', @handle_get_data
+
+      # if we have sub data (init data) in the data
+      # than we're going to set it
+      @set_data data.data
 
     @_new_cell_id: ->
       _last_cell_id += 1
@@ -59,6 +81,10 @@ define ['spine','mediator'], (spine, mediator) ->
     get: (key) ->
       @data[key]
 
+    # return all the cell's data
+    get_data: ->
+      @data
+
     # sets multiple values
     set_data: (data, callback= ->) ->
 
@@ -91,7 +117,18 @@ define ['spine','mediator'], (spine, mediator) ->
     clear: ->
       @set_data {}
 
+    # handles events we receive about cell updates
+    handle_set_value: (data) ->
+      # we only pay attention to events which have to do with us
+      return unless @id == id
+      @set_value data
+
+    handle_set_data: (data) ->
+      return unless @id == id
+      @set_data data
+
     # over ride fire so all events go to the mediator
     fire: (args...) ->
       # TODO: figure out if i can do *args
       mediator.fire.apply mediator, args
+

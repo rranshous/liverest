@@ -4,7 +4,7 @@
     __hasProp = {}.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  define(['mediator_shim', 'spine'], function(spine) {
+  define(['spine'], function(spine) {
     var Condition, Mediator, mediator;
     Condition = (function() {
 
@@ -63,10 +63,8 @@
               attr = _ref[_j];
               if (obj.prototype[attr]) {
                 obj.prototype['__' + attr] = obj.prototype[attr];
-                _results1.push(obj.prototype[fn] = this._bind.curry(obj.prototype['__' + attr]));
-              } else {
-                _results1.push(void 0);
               }
+              _results1.push(obj.prototype[fn] = this._bind.curry(obj.prototype['__' + attr]));
             }
             return _results1;
           }).call(this));
@@ -92,10 +90,8 @@
               attr = _ref[_j];
               if (obj[attr] != null) {
                 obj['__' + attr] = obj[attr];
-                _results1.push(obj[fn] = this._bind.curry(obj['__' + attr]));
-              } else {
-                _results1.push(void 0);
               }
+              _results1.push(obj[fn] = this._bind.curry(obj['__' + attr]));
             }
             return _results1;
           }).call(this));

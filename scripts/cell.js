@@ -8,19 +8,35 @@
   _last_cell_id = 0;
 
   define(['spine', 'mediator'], function(spine, mediator) {
-    var Cell;
+    var Cell, data_filter;
+    data_filter = function(filter_data, callback) {
+      var _this = this;
+      return function(data) {
+        var k, v;
+        for (k in filter_data) {
+          v = filter_data[k];
+          if (data[k] !== v) {
+            return;
+          }
+        }
+        return callback(data);
+      };
+    };
     return Cell = (function(_super) {
 
       __extends(Cell, _super);
 
       Cell.extend(Spine.Events);
 
-      function Cell(id) {
-        this.id = id;
+      function Cell(data) {
+        this.id = typeof data === 'number' ? data : data.id;
         this.tokens = {};
         this.fire('cell:init', {
           id: this.id
         });
+        mediator.on('cell:set_data', this.handle_set_data);
+        mediator.on('cell:get_data', this.handle_get_data);
+        this.set_data(data.data);
       }
 
       Cell._new_cell_id = function() {
@@ -69,6 +85,10 @@
         return this.data[key];
       };
 
+      Cell.prototype.get_data = function() {
+        return this.data;
+      };
+
       Cell.prototype.set_data = function(data, callback) {
         var done, token, total,
           _this = this;
@@ -96,6 +116,20 @@
 
       Cell.prototype.clear = function() {
         return this.set_data({});
+      };
+
+      Cell.prototype.handle_set_value = function(data) {
+        if (this.id !== id) {
+          return;
+        }
+        return this.set_value(data);
+      };
+
+      Cell.prototype.handle_set_data = function(data) {
+        if (this.id !== id) {
+          return;
+        }
+        return this.set_data(data);
       };
 
       Cell.prototype.fire = function() {
