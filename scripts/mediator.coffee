@@ -19,33 +19,33 @@ define ['mediator_shim', 'spine'], (spine) ->
     @extend Spine.Events
 
     # take another class and extend it to be magical
-    extend: (obj) ->
+    @class_extend: (obj) ->
 
       to_update = 
-        @_bind: ['addListener', 'bind', 'on']
-        @_trigger: ['fire', 'trigger', 'emit']
-        @_unbind: ['un', 'remove_listener', 'unbind']
+        '_bind': ['addListener', 'bind', 'on']
+        '_trigger': ['fire', 'trigger', 'emit']
+        '_unbind': ['un', 'remove_listener', 'unbind']
 
       for fn, attrs in to_update
         for attr in ['addListener', 'bind', 'on']
-          if obj[attr]
-            obj['__'+attr] = obj[attr]
-            obj[attr] = @_bind.curry(obj['__'+attr])
+          if obj::[attr]
+            obj::['__'+attr] = obj::[attr]
+            obj::[fn] = @_bind.curry(obj::['__'+attr])
 
     # sometimes we already have an instantiated event
     # obj we want to extend, this helps us do that
-    instance_extend: (obj) ->
+    @instance_extend: (obj) ->
 
       to_update = 
-        @_bind: ['addListener', 'bind', 'on']
-        @_trigger: ['fire', 'trigger', 'emit']
-        @_unbind: ['un', 'remove_listener', 'unbind']
+        '_bind': ['addListener', 'bind', 'on']
+        '_trigger': ['fire', 'trigger', 'emit']
+        '_unbind': ['un', 'remove_listener', 'unbind']
 
       for fn, attrs in to_update
         for attr in ['addListener', 'bind', 'on']
-          if obj[attr]
+          if obj[attr]?
             obj['__'+attr] = obj[attr]
-            obj[attr] = @_bind.curry(obj['__'+attr])
+            obj[fn] = @_bind.curry(obj['__'+attr])
 
     # update bind so that instead of an event name
     # we can define a function which calls a callback
