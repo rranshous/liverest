@@ -5,7 +5,7 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define(['spine'], function(spine) {
-    var Condition, Eventable, SimpleEventable, has_super, mediator;
+    var Condition, Eventable, has_super, mediator;
     has_super = function(f_name) {
       var _ref;
       if ((_ref = this.prototype.__super__) != null ? _ref[f_name] : void 0) {
@@ -43,76 +43,6 @@
       return Condition;
 
     })();
-    SimpleEventable = (function() {
-
-      function SimpleEventable() {}
-
-      SimpleEventable.prototype.bind = function(ev, callback) {
-        var calls, evs, name, _i, _len;
-        evs = ev.split(' ');
-        calls = this.hasOwnProperty('_callbacks') && this._callbacks || (this._callbacks = {});
-        for (_i = 0, _len = evs.length; _i < _len; _i++) {
-          name = evs[_i];
-          calls[name] || (calls[name] = []);
-          calls[name].push(callback);
-        }
-        return this;
-      };
-
-      SimpleEventable.prototype.one = function(ev, callback) {
-        return this.bind(ev, function() {
-          this.unbind(ev, arguments.callee);
-          return callback.apply(this, arguments);
-        });
-      };
-
-      SimpleEventable.prototype.trigger = function() {
-        var args, callback, ev, list, _i, _len, _ref;
-        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        ev = args.shift();
-        list = this.hasOwnProperty('_callbacks') && ((_ref = this._callbacks) != null ? _ref[ev] : void 0);
-        if (!list) {
-          return;
-        }
-        for (_i = 0, _len = list.length; _i < _len; _i++) {
-          callback = list[_i];
-          if (callback.apply(this, args) === false) {
-            break;
-          }
-        }
-        return true;
-      };
-
-      SimpleEventable.prototype.unbind = function(ev, callback) {
-        var cb, i, list, _i, _len, _ref;
-        if (!ev) {
-          this._callbacks = {};
-          return this;
-        }
-        list = (_ref = this._callbacks) != null ? _ref[ev] : void 0;
-        if (!list) {
-          return this;
-        }
-        if (!callback) {
-          delete this._callbacks[ev];
-          return this;
-        }
-        for (i = _i = 0, _len = list.length; _i < _len; i = ++_i) {
-          cb = list[i];
-          if (!(cb === callback)) {
-            continue;
-          }
-          list = list.slice();
-          list.splice(i, 1);
-          this._callbacks[ev] = list;
-          break;
-        }
-        return this;
-      };
-
-      return SimpleEventable;
-
-    })();
     Eventable = (function(_super) {
 
       __extends(Eventable, _super);
@@ -120,6 +50,8 @@
       function Eventable() {
         return Eventable.__super__.constructor.apply(this, arguments);
       }
+
+      Eventable.include(spine.Events);
 
       Eventable.class_extend = function(obj) {
         var attr, attrs, fn, to_update, _results;
@@ -250,7 +182,7 @@
 
       return Eventable;
 
-    })(SimpleEventable);
+    })(spine.Module);
     mediator = new Eventable();
     mediator.Eventable = Eventable;
     return mediator;
