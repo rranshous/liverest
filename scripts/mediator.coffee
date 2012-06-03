@@ -46,13 +46,10 @@ define ['spine'], (spine) ->
         '_trigger': ['fire', 'trigger', 'emit']
         '_unbind': ['un', 'remove_listener', 'unbind']
 
-      console.log 'instance extend'
-
       for fn, attrs of to_update
         for attr in attrs
           if obj[attr]?
             obj['__'+attr] = obj[attr]
-            console.log "#{attr} => #{fn}"
             obj[attr] = @::[fn].curry(obj['__'+attr])
 
     # update bind so that instead of an event name
@@ -77,8 +74,6 @@ define ['spine'], (spine) ->
 
       # if we didn't get passed a super, lets
       # use the default method
-      console.log 'scope'
-      console.log this
       _super = @trigger unless _super
 
       # copy the args before we pass them on,
@@ -93,8 +88,6 @@ define ['spine'], (spine) ->
             condition.call.apply condition, _args[0], args[1..]
 
       # let the base class do it's thing
-      console.log 'super'
-      console.log _super
       _super args...
 
     _unbind: (_super, ev, callback) ->
@@ -112,8 +105,6 @@ define ['spine'], (spine) ->
       _super ev, callback
 
     on: (args...) ->
-      console.log 'on'
-      console.log this
       @_bind undefined, args...
     fire: (args...) -> 
       @_trigger undefined, args...

@@ -20,8 +20,28 @@
         });
         mediator.on('cell:set_data', this.handle_set_data);
         mediator.on('cell:get_data', this.handle_get_data);
-        this.set_data(data.data);
+        if (data != null ? data.data : void 0) {
+          this.set_data(data.data);
+        }
       }
+
+      Cell.fire_set_value = function(to_obj, id, key, value, token) {
+        console.log("cells firing set_cell_value");
+        return to_obj.fire('cell:set_value', {
+          id: id,
+          key: key,
+          value: value,
+          token: token
+        });
+      };
+
+      Cell.fire_set_data = function(to_obj, id, data, token) {
+        return to_objfire('cell:set_data', {
+          id: id,
+          data: data,
+          token: token
+        });
+      };
 
       Cell._new_cell_id = function() {
         return _last_cell_id += 1;
@@ -47,12 +67,7 @@
         token = this.tokens[key] = this._new_token_id();
         return this._set(key, value, function() {
           if (fire) {
-            console.log("cells firing set_cell_value");
-            _this.fire('cell:set_value', {
-              key: key,
-              value: value,
-              token: token
-            });
+            _this.fire_set_value(_this, _this.id, key, value, token);
           }
           return callback(true, key, value);
         });
@@ -73,8 +88,8 @@
         return this.data;
       };
 
-      Cell.prototype.set_data = function(data, callback) {
-        var done, k, token, total, v, _results,
+      Cell.prototype.set_data = function(data, token, callback) {
+        var done, k, total, v, _results,
           _this = this;
         if (callback == null) {
           callback = function() {};
@@ -82,7 +97,9 @@
         if (!(data != null ? data.length : void 0)) {
           return;
         }
-        token = this._new_token_id();
+        if (token == null) {
+          token = this._new_token_id();
+        }
         total = data.length;
         done = 0;
         _results = [];
@@ -92,12 +109,8 @@
             done += 1;
             if (total === done) {
               callback(true, data);
-              return _this.fire('cell:set_data', {
-                id: _this.id,
-                data: data,
-                token: token
-              });
             }
+            return _this.fire_set_data(_this, _this.id, data, token);
           }));
         }
         return _results;
@@ -124,17 +137,17 @@
       };
 
       Cell.prototype.handle_set_value = function(data) {
-        if (this.id !== id) {
+        if (this.id !== data.id) {
           return;
         }
         return this.set(data);
       };
 
       Cell.prototype.handle_set_data = function(data) {
-        if (this.id !== id) {
+        if (this.id !== data.id) {
           return;
         }
-        return this.set_data(data);
+        return this.set_data(data.data, data.token);
       };
 
       Cell.prototype.fire = mediator.fire;

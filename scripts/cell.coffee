@@ -25,7 +25,22 @@ define ['spine','mediator'], (spine, mediator) ->
 
       # if we have sub data (init data) in the data
       # than we're going to set it
-      @set_data data.data
+      @set_data data.data if data?.data
+
+    @fire_set_value: (to_obj, id, key, value, token) ->
+      console.log "cells firing set_cell_value"
+      to_obj.fire 'cell:set_value',
+        id: id,
+        key: key,
+        value: value,
+        token: token
+
+    @fire_set_data: (to_obj, id, data, token) ->
+      # let the world know
+      to_objfire 'cell:set_data',
+        id: id,
+        data: data,
+        token: token
 
     @_new_cell_id: ->
       _last_cell_id += 1
@@ -55,11 +70,7 @@ define ['spine','mediator'], (spine, mediator) ->
 
         # let the world know
         if fire
-          console.log "cells firing set_cell_value"
-          @fire 'cell:set_value',
-            key: key,
-            value: value,
-            token: token
+          @fire_set_value this, @id, key, value, token
 
         # call back with much success
         callback true, key, value
@@ -76,14 +87,14 @@ define ['spine','mediator'], (spine, mediator) ->
       @data
 
     # sets multiple values
-    set_data: (data, callback= ->) ->
+    set_data: (data, token, callback= ->) ->
 
       # this can't be used for clearning
       unless data?.length
         return
 
       # generate token
-      token = @_new_token_id()
+      token = @_new_token_id() unless token?
 
       # keep track of how many set's we've done
       total = data.length
@@ -98,11 +109,8 @@ define ['spine','mediator'], (spine, mediator) ->
           if total == done
             callback true, data
 
-            # let the world know
-            @fire 'cell:set_data',
-              id: @id,
-              data: data,
-              token: token
+          # let the world know
+          @fire_set_data this, @id, data, token
 
     # clears all the cell's values
     clear: (token, callback= ->) ->
@@ -123,16 +131,15 @@ define ['spine','mediator'], (spine, mediator) ->
       # we removed
       callback(cleared)
 
-
     # handles events we receive about cell updates
     handle_set_value: (data) ->
       # we only pay attention to events which have to do with us
-      return unless @id == id
+      return unless @id == data.id
       @set data
 
     handle_set_data: (data) ->
-      return unless @id == id
-      @set_data data
+      return unless @id == data.id
+      @set_data data.data, data.token
 
     # send all events through the mediator
     fire: mediator.fire

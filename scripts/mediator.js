@@ -88,7 +88,6 @@
           '_trigger': ['fire', 'trigger', 'emit'],
           '_unbind': ['un', 'remove_listener', 'unbind']
         };
-        console.log('instance extend');
         _results = [];
         for (fn in to_update) {
           attrs = to_update[fn];
@@ -99,7 +98,6 @@
               attr = attrs[_i];
               if (obj[attr] != null) {
                 obj['__' + attr] = obj[attr];
-                console.log("" + attr + " => " + fn);
                 _results1.push(obj[attr] = this.prototype[fn].curry(obj['__' + attr]));
               } else {
                 _results1.push(void 0);
@@ -130,8 +128,6 @@
         var args, _args, _super,
           _this = this;
         _super = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
-        console.log('scope');
-        console.log(this);
         if (!_super) {
           _super = this.trigger;
         }
@@ -143,8 +139,6 @@
             }
           });
         });
-        console.log('super');
-        console.log(_super);
         return _super.apply(null, args);
       };
 
@@ -163,8 +157,6 @@
       Eventable.prototype.on = function() {
         var args;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        console.log('on');
-        console.log(this);
         return this._bind.apply(this, [void 0].concat(__slice.call(args)));
       };
 

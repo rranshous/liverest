@@ -5,14 +5,16 @@
     var fire_cell_state,
       _this = this;
     fire_cell_state = function(to_obj, id) {
-      var cell;
+      var cell, k, v, _ref, _results;
       cell = cell_id_tracker.first(id);
       if (cell != null) {
-        return to_obj.fire('cell:set_data', {
-          id: id,
-          token: 0,
-          data: cell.get_data()
-        });
+        _ref = cell.get_data();
+        _results = [];
+        for (k in _ref) {
+          v = _ref[k];
+          _results.push(cell.fire_set_data(to_obj, id, key, value, cell.tokens[k]));
+        }
+        return _results;
       }
     };
     return meditor.on('cell:init', function(data) {
