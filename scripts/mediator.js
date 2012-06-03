@@ -62,7 +62,6 @@
               attr = attrs[_i];
               if (obj.prototype[attr]) {
                 obj.prototype['__' + attr] = obj.prototype[attr];
-                console.log("" + attr + " => " + fn);
                 _results1.push(obj.prototype[attr] = this.prototype[attr]);
               } else {
                 _results1.push(void 0);
@@ -91,7 +90,6 @@
               attr = attrs[_i];
               if (obj[attr] != null) {
                 obj['__' + attr] = obj[attr];
-                console.log("" + attr + " => " + fn);
                 _results1.push(obj[attr] = this[fn].curry(obj['__' + attr]));
               } else {
                 _results1.push(void 0);
@@ -105,15 +103,12 @@
 
       Mediator.prototype._bind = function(_super, ev, callback) {
         var condition, conditions;
-        console.log("binding");
         if (typeof ev === 'function') {
-          console.log("not calling super " + ev);
           conditions = this._conditions || (this._conditions = []);
           condition = new Condition(ev, callback);
           conditions.push(condition);
           return this;
         } else {
-          console.log("calling super " + ev);
           return _super(ev, callback);
         }
       };
@@ -145,25 +140,30 @@
       Mediator.prototype.on = function() {
         var args;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        console.log(this);
         return this._bind.apply(this, args);
       };
 
       Mediator.prototype.fire = function() {
         var args;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        console.log(this);
         return this._trigger.apply(this, args);
       };
 
       Mediator.prototype.un = function() {
         var args;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        console.log(this);
         return this._unbind.apply(this, args);
       };
 
       return Mediator;
 
     })(spine.Module);
-    return mediator = new Mediator();
+    mediator = new Mediator();
+    mediator.Mediator = Mediator;
+    return mediator;
   });
 
 }).call(this);

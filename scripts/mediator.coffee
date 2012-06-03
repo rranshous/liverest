@@ -30,7 +30,6 @@ define ['spine'], (spine) ->
         for attr in attrs
           if obj::[attr]
             obj::['__'+attr] = obj::[attr]
-            console.log "#{attr} => #{fn}"
             obj::[attr] = @::[attr]
 
     # sometimes we already have an instantiated event
@@ -46,7 +45,6 @@ define ['spine'], (spine) ->
         for attr in attrs
           if obj[attr]?
             obj['__'+attr] = obj[attr]
-            console.log "#{attr} => #{fn}"
             obj[attr] = @[fn].curry(obj['__'+attr])
 
     # update bind so that instead of an event name
@@ -54,17 +52,13 @@ define ['spine'], (spine) ->
     # with bool as to whether it matches
     _bind: (_super, ev, callback) ->
 
-      console.log "binding"
-      
       # catch events which are functions
       if typeof ev is 'function'
-        console.log "not calling super #{ev}"
         conditions = @_conditions or= []
         condition = new Condition ev, callback
         conditions.push condition
         this
       else
-        console.log "calling super #{ev}"
         _super ev, callback
 
     _trigger: (_super, args...) ->
@@ -82,6 +76,7 @@ define ['spine'], (spine) ->
 
       # let the base class do it's thing
       # TODO: figure out if i can do *args
+      # i think like this args...
       _super.apply @, args
 
     _unbind: (_super, ev, callback) ->
@@ -94,9 +89,17 @@ define ['spine'], (spine) ->
       # respect
       _super ev, callback
 
-    on: (args...) -> @_bind.apply @, args
-    fire: (args...) -> @_trigger.apply @, args
-    un: (args...) -> @_unbind.apply @, args
+    on: (args...) ->
+      console.log @
+      @_bind.apply @, args
+    fire: (args...) -> 
+      console.log @
+      @_trigger.apply @, args
+    un: (args...) ->
+      console.log @
+      @_unbind.apply @, args
 
 
   mediator = new Mediator()
+  mediator.Mediator = Mediator
+  return mediator

@@ -14,12 +14,13 @@ define ['spine','mediator'], (spine, mediator) ->
       callback data
 
   class Cell extends Spine.Module
-    @extend Spine.Events
+
+    @extend mediator.Mediator
 
     constructor: (data) ->
 
       # grab an id if any
-      @id = if typeof data == 'number' then data else data.id
+      @id = if typeof data == 'number' then data else data?.id
 
       # store a lookup of when it was set
       @tokens = {}

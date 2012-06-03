@@ -25,10 +25,10 @@
 
       __extends(Cell, _super);
 
-      Cell.extend(Spine.Events);
+      Cell.extend(mediator.Mediator);
 
       function Cell(data) {
-        this.id = typeof data === 'number' ? data : data.id;
+        this.id = typeof data === 'number' ? data : data != null ? data.id : void 0;
         this.tokens = {};
         this.fire('cell:init', {
           id: this.id
