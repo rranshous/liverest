@@ -15,7 +15,7 @@
       function Cell(data) {
         this.id = typeof data === 'number' ? data : data != null ? data.id : void 0;
         this.tokens = {};
-        this.fire('cell:init', {
+        mediator.fire('cell:init', {
           id: this.id
         });
         mediator.on('cell:set_data', this.handle_set_data);
@@ -26,7 +26,6 @@
       }
 
       Cell.fire_set_value = function(to_obj, id, key, value, token) {
-        console.log("cells firing set_cell_value");
         return to_obj.fire('cell:set_value', {
           id: id,
           key: key,
@@ -48,7 +47,7 @@
       };
 
       Cell.prototype._new_token_id = function() {
-        return '' + Date().getTime() + (this.id || '');
+        return '' + (new Date().getTime()) + (this.id || '');
       };
 
       Cell.prototype.set = function(key, value, token, fire, callback) {
@@ -60,14 +59,15 @@
           callback = function() {};
         }
         console.log("cell [set] " + key + " " + value + " " + token + " " + fire);
-        if (!((token != null) || token > this.tokens[key])) {
+        if (token && this.tokens[key] && token < this.tokens[key]) {
+          console.log("returning based on token");
           callback(false, key, value);
           return;
         }
         token = this.tokens[key] = this._new_token_id();
         return this._set(key, value, function() {
           if (fire) {
-            _this.fire_set_value(_this, _this.id, key, value, token);
+            mediator.fire_set_value(_this, _this.id, key, value, token);
           }
           return callback(true, key, value);
         });
@@ -110,7 +110,7 @@
             if (total === done) {
               callback(true, data);
             }
-            return _this.fire_set_data(_this, _this.id, data, token);
+            return mediator.fire_set_data(_this, _this.id, data, token);
           }));
         }
         return _results;
@@ -130,7 +130,7 @@
             delete this.data[k];
           }
         }
-        this.fire('cell:clear', {
+        mediator.fire('cell:clear', {
           token: token
         });
         return callback(cleared);
@@ -149,8 +149,6 @@
         }
         return this.set_data(data.data, data.token);
       };
-
-      Cell.prototype.fire = mediator.fire;
 
       return Cell;
 

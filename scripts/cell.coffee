@@ -15,7 +15,7 @@ define ['spine','mediator'], (spine, mediator) ->
       @tokens = {}
 
       # let the world know we're here
-      @fire 'cell:init',
+      mediator.fire 'cell:init',
         id: @id
 
       # hook up to the mediator so that any events
@@ -28,7 +28,6 @@ define ['spine','mediator'], (spine, mediator) ->
       @set_data data.data if data?.data
 
     @fire_set_value: (to_obj, id, key, value, token) ->
-      console.log "cells firing set_cell_value"
       to_obj.fire 'cell:set_value',
         id: id,
         key: key,
@@ -47,7 +46,7 @@ define ['spine','mediator'], (spine, mediator) ->
 
     # token's based on timestamps
     _new_token_id: ->
-      '' + Date().getTime() + (@id or '')
+      '' + (new Date().getTime()) + (@id or '')
 
     # sets the cell's value
     # if token is set only sets if given token
@@ -57,7 +56,8 @@ define ['spine','mediator'], (spine, mediator) ->
       console.log "cell [set] #{key} #{value} #{token} #{fire}"
 
       # if token is given and older, we're done
-      unless token? or token > @tokens[key]
+      if token and @tokens[key] and token < @tokens[key]
+        console.log "returning based on token"
         # call back w/ success being false
         callback false, key, value
         return
@@ -70,7 +70,7 @@ define ['spine','mediator'], (spine, mediator) ->
 
         # let the world know
         if fire
-          @fire_set_value this, @id, key, value, token
+          mediator.fire_set_value this, @id, key, value, token
 
         # call back with much success
         callback true, key, value
@@ -110,7 +110,7 @@ define ['spine','mediator'], (spine, mediator) ->
             callback true, data
 
           # let the world know
-          @fire_set_data this, @id, data, token
+          mediator.fire_set_data this, @id, data, token
 
     # clears all the cell's values
     clear: (token, callback= ->) ->
@@ -124,7 +124,7 @@ define ['spine','mediator'], (spine, mediator) ->
           delete @data[k]
 
       # let the world know
-      @fire 'cell:clear',
+      mediator.fire 'cell:clear',
         token: token
 
       # let the callback know what
@@ -140,7 +140,3 @@ define ['spine','mediator'], (spine, mediator) ->
     handle_set_data: (data) ->
       return unless @id == data.id
       @set_data data.data, data.token
-
-    # send all events through the mediator
-    fire: mediator.fire
-

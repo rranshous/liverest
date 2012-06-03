@@ -128,16 +128,25 @@
         var args, _args, _super,
           _this = this;
         _super = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+        console.log(this);
+        console.log("trigger: " + args[0] + " => " + args.slice(1));
+        console.log(args);
         if (!_super) {
           _super = this.trigger;
         }
         _args = args.slice(0);
         (this._conditions || []).forEach(function(condition) {
-          return condition.match(_args, function(match) {
+          var handle_match, match_args;
+          handle_match = function(match) {
+            console.log({
+              match: match
+            });
             if (match) {
-              return condition.call.apply(condition, _args[0], args.slice(1));
+              return condition.call.apply(condition, _args);
             }
-          });
+          };
+          match_args = _args.concat(handle_match);
+          return condition.match.apply(condition, match_args);
         });
         return _super.apply(null, args);
       };
@@ -177,6 +186,7 @@
     })(spine.Module);
     mediator = new Eventable();
     mediator.Eventable = Eventable;
+    mediator.is_mediator = true;
     return mediator;
   });
 

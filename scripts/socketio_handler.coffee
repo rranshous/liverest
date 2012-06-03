@@ -20,6 +20,11 @@ define ['mediator'], (mediator) ->
       # this function checks if the event is one the socket will care about
       (event, data, respond) =>
 
+        console.log "mediator event check"
+        console.log 
+          event:event,
+          data:data
+
         # check if the data has to do with a cell the socket cares about
         if data.id
 

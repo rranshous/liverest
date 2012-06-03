@@ -72,6 +72,10 @@ define ['spine'], (spine) ->
 
     _trigger: (_super, args...) ->
 
+      console.log this
+      console.log "trigger: #{args[0]} => #{args[1..]}"
+      console.log args
+
       # if we didn't get passed a super, lets
       # use the default method
       _super = @trigger unless _super
@@ -82,10 +86,12 @@ define ['spine'], (spine) ->
 
       # now we want to go through all the conditions matching them
       (@_conditions or []).forEach (condition) =>
-        condition.match _args, (match) =>
-          # send the event out to the callback
-          if match
-            condition.call.apply condition, _args[0], args[1..]
+        handle_match = (match) =>
+          console.log 
+            match:match
+          condition.call _args... if match
+        match_args = _args.concat(handle_match)
+        condition.match match_args...
 
       # let the base class do it's thing
       _super args...
@@ -111,8 +117,7 @@ define ['spine'], (spine) ->
     un: (args...) ->
       @_unbind undefined, args...
 
-
-
   mediator = new Eventable()
   mediator.Eventable = Eventable
+  mediator.is_mediator = true
   return mediator
