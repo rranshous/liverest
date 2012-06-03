@@ -16,7 +16,12 @@ define ['spine'], (spine) ->
 
   # Mediator
   class Mediator extends spine.Module
+
     @extend Spine.Events
+
+    @extended: () ->
+      console.log 'extended'
+      console.log this 
 
     # take another class and extend it to be magical
     class_extend: (obj) ->

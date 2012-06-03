@@ -4,15 +4,6 @@ _last_cell_id = 0
 
 define ['spine','mediator'], (spine, mediator) ->
 
-  # only pass on to callback data which @ least
-  # matches our filter (doesn't have to be exact)
-  data_filter = (filter_data, callback) ->
-    (data) =>
-      for k, v of filter_data
-        unless data[k] == v
-          return
-      callback data
-
   class Cell extends Spine.Module
 
     @extend mediator.Mediator

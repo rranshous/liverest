@@ -7,20 +7,7 @@
   _last_cell_id = 0;
 
   define(['spine', 'mediator'], function(spine, mediator) {
-    var Cell, data_filter;
-    data_filter = function(filter_data, callback) {
-      var _this = this;
-      return function(data) {
-        var k, v;
-        for (k in filter_data) {
-          v = filter_data[k];
-          if (data[k] !== v) {
-            return;
-          }
-        }
-        return callback(data);
-      };
-    };
+    var Cell;
     return Cell = (function(_super) {
 
       __extends(Cell, _super);

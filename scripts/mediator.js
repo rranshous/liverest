@@ -45,6 +45,11 @@
 
       Mediator.extend(Spine.Events);
 
+      Mediator.extended = function() {
+        console.log('extended');
+        return console.log(this);
+      };
+
       Mediator.prototype.class_extend = function(obj) {
         var attr, attrs, fn, to_update, _results;
         to_update = {
