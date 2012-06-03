@@ -6,6 +6,8 @@ define ['mediator'], (mediator) ->
 
   handle_socket = (socket) ->
 
+    console.log 'handling socket'
+
     # update the socket so that it has better (internal) event support
     mediator.Eventable.instance_extend socket
 
@@ -32,9 +34,10 @@ define ['mediator'], (mediator) ->
           socket.get 'tracking_cells', (err, cells) =>
             respond(true) if data.id in (cells or []) else respond(false)
 
-        # we dont care about the event if it has no id
         else
-          respond(false)
+          
+          # if the cell doesn't have an id than just pass on through
+          respond(true) 
 
       # this function handles cells from the mediator
       # we've already decided we want them, just pass them on
@@ -44,6 +47,8 @@ define ['mediator'], (mediator) ->
       # TODO: use something more generic than connection, something
       #       which signifies it's a proxy for the firing object
       event_data.__connection = socket
+      console.log
+        firing_socket: socket
       socket.fire event, event_data
 
   handle_server = (server) ->

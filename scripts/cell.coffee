@@ -27,16 +27,16 @@ define ['spine','mediator'], (spine, mediator) ->
       # than we're going to set it
       @set_data data.data if data?.data
 
-    @fire_set_value: (to_obj, id, key, value, token) ->
+    fire_set_value: (to_obj, id, key, value, token) ->
       to_obj.fire 'cell:set_value',
         id: id,
         key: key,
         value: value,
         token: token
 
-    @fire_set_data: (to_obj, id, data, token) ->
+    fire_set_data: (to_obj, id, data, token) ->
       # let the world know
-      to_objfire 'cell:set_data',
+      to_obj.fire 'cell:set_data',
         id: id,
         data: data,
         token: token
@@ -70,7 +70,7 @@ define ['spine','mediator'], (spine, mediator) ->
 
         # let the world know
         if fire
-          mediator.fire_set_value this, @id, key, value, token
+          @fire_set_value mediator, @id, key, value, token
 
         # call back with much success
         callback true, key, value
@@ -110,7 +110,7 @@ define ['spine','mediator'], (spine, mediator) ->
             callback true, data
 
           # let the world know
-          mediator.fire_set_data this, @id, data, token
+          @fire_set_data mediator, @id, data, token
 
     # clears all the cell's values
     clear: (token, callback= ->) ->

@@ -6,6 +6,7 @@
     var handle_server, handle_socket;
     handle_socket = function(socket) {
       var _this = this;
+      console.log('handling socket');
       mediator.Eventable.instance_extend(socket);
       socket.on((function(e, d, r) {
         return respond(true);
@@ -22,10 +23,13 @@
             return respond(true)((_ref = data.id, __indexOf.call(cells || [], _ref) >= 0) ? void 0 : respond(false));
           });
         } else {
-          return respond(false);
+          return respond(true);
         }
       }, function(event, event_data) {
         event_data.__connection = socket;
+        console.log({
+          firing_socket: socket
+        });
         return socket.fire(event, event_data);
       });
     };

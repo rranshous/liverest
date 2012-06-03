@@ -41,6 +41,9 @@ define ['spine'], (spine) ->
     # obj we want to extend, this helps us do that
     @instance_extend: (obj) ->
 
+      console.log
+        instance_extend: obj
+
       to_update = 
         '_bind': ['addListener', 'bind', 'on']
         '_trigger': ['fire', 'trigger', 'emit']
@@ -74,7 +77,6 @@ define ['spine'], (spine) ->
 
       console.log this
       console.log "trigger: #{args[0]} => #{args[1..]}"
-      console.log args
 
       # if we didn't get passed a super, lets
       # use the default method

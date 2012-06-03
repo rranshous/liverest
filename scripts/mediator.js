@@ -83,6 +83,9 @@
 
       Eventable.instance_extend = function(obj) {
         var attr, attrs, fn, to_update, _results;
+        console.log({
+          instance_extend: obj
+        });
         to_update = {
           '_bind': ['addListener', 'bind', 'on'],
           '_trigger': ['fire', 'trigger', 'emit'],
@@ -130,7 +133,6 @@
         _super = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
         console.log(this);
         console.log("trigger: " + args[0] + " => " + args.slice(1));
-        console.log(args);
         if (!_super) {
           _super = this.trigger;
         }

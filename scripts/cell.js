@@ -25,7 +25,7 @@
         }
       }
 
-      Cell.fire_set_value = function(to_obj, id, key, value, token) {
+      Cell.prototype.fire_set_value = function(to_obj, id, key, value, token) {
         return to_obj.fire('cell:set_value', {
           id: id,
           key: key,
@@ -34,8 +34,8 @@
         });
       };
 
-      Cell.fire_set_data = function(to_obj, id, data, token) {
-        return to_objfire('cell:set_data', {
+      Cell.prototype.fire_set_data = function(to_obj, id, data, token) {
+        return to_obj.fire('cell:set_data', {
           id: id,
           data: data,
           token: token
@@ -67,7 +67,7 @@
         token = this.tokens[key] = this._new_token_id();
         return this._set(key, value, function() {
           if (fire) {
-            mediator.fire_set_value(_this, _this.id, key, value, token);
+            _this.fire_set_value(mediator, _this.id, key, value, token);
           }
           return callback(true, key, value);
         });
@@ -110,7 +110,7 @@
             if (total === done) {
               callback(true, data);
             }
-            return mediator.fire_set_data(_this, _this.id, data, token);
+            return _this.fire_set_data(mediator, _this.id, data, token);
           }));
         }
         return _results;
