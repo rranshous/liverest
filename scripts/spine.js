@@ -116,16 +116,11 @@
       if (!obj) {
         throw 'extend(obj) requires obj';
       }
-      console.log("module extending");
-      console.log(this);
-      console.log(obj);
       for (key in obj) {
         value = obj[key];
-        if (!(__indexOf.call(moduleKeywords, key) < 0)) {
-          continue;
+        if (__indexOf.call(moduleKeywords, key) < 0) {
+          this[key] = value;
         }
-        console.log("extending " + key);
-        this[key] = value;
       }
       if ((_ref = obj.extended) != null) {
         _ref.apply(this);

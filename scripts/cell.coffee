@@ -4,9 +4,7 @@ _last_cell_id = 0
 
 define ['spine','mediator'], (spine, mediator) ->
 
-  class Cell extends Spine.Module
-
-    @extend mediator.Mediator
+  class Cell extends mediator.Eventable
 
     constructor: (data) ->
 

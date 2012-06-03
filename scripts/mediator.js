@@ -5,7 +5,15 @@
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   define(['spine'], function(spine) {
-    var Condition, Mediator, mediator;
+    var Condition, Eventable, SimpleEventable, has_super, mediator;
+    has_super = function(f_name) {
+      var _ref;
+      if ((_ref = this.prototype.__super__) != null ? _ref[f_name] : void 0) {
+        return true;
+      } else {
+        return false;
+      }
+    };
     Condition = (function() {
 
       function Condition(fn, callback) {
@@ -35,22 +43,85 @@
       return Condition;
 
     })();
-    Mediator = (function(_super) {
+    SimpleEventable = (function() {
 
-      __extends(Mediator, _super);
+      function SimpleEventable() {}
 
-      function Mediator() {
-        return Mediator.__super__.constructor.apply(this, arguments);
-      }
-
-      Mediator.extend(Spine.Events);
-
-      Mediator.extended = function() {
-        console.log('extended');
-        return console.log(this);
+      SimpleEventable.prototype.bind = function(ev, callback) {
+        var calls, evs, name, _i, _len;
+        evs = ev.split(' ');
+        calls = this.hasOwnProperty('_callbacks') && this._callbacks || (this._callbacks = {});
+        for (_i = 0, _len = evs.length; _i < _len; _i++) {
+          name = evs[_i];
+          calls[name] || (calls[name] = []);
+          calls[name].push(callback);
+        }
+        return this;
       };
 
-      Mediator.prototype.class_extend = function(obj) {
+      SimpleEventable.prototype.one = function(ev, callback) {
+        return this.bind(ev, function() {
+          this.unbind(ev, arguments.callee);
+          return callback.apply(this, arguments);
+        });
+      };
+
+      SimpleEventable.prototype.trigger = function() {
+        var args, callback, ev, list, _i, _len, _ref;
+        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        ev = args.shift();
+        list = this.hasOwnProperty('_callbacks') && ((_ref = this._callbacks) != null ? _ref[ev] : void 0);
+        if (!list) {
+          return;
+        }
+        for (_i = 0, _len = list.length; _i < _len; _i++) {
+          callback = list[_i];
+          if (callback.apply(this, args) === false) {
+            break;
+          }
+        }
+        return true;
+      };
+
+      SimpleEventable.prototype.unbind = function(ev, callback) {
+        var cb, i, list, _i, _len, _ref;
+        if (!ev) {
+          this._callbacks = {};
+          return this;
+        }
+        list = (_ref = this._callbacks) != null ? _ref[ev] : void 0;
+        if (!list) {
+          return this;
+        }
+        if (!callback) {
+          delete this._callbacks[ev];
+          return this;
+        }
+        for (i = _i = 0, _len = list.length; _i < _len; i = ++_i) {
+          cb = list[i];
+          if (!(cb === callback)) {
+            continue;
+          }
+          list = list.slice();
+          list.splice(i, 1);
+          this._callbacks[ev] = list;
+          break;
+        }
+        return this;
+      };
+
+      return SimpleEventable;
+
+    })();
+    Eventable = (function(_super) {
+
+      __extends(Eventable, _super);
+
+      function Eventable() {
+        return Eventable.__super__.constructor.apply(this, arguments);
+      }
+
+      Eventable.class_extend = function(obj) {
         var attr, attrs, fn, to_update, _results;
         to_update = {
           '_bind': ['addListener', 'bind', 'on'],
@@ -78,13 +149,14 @@
         return _results;
       };
 
-      Mediator.prototype.instance_extend = function(obj) {
+      Eventable.instance_extend = function(obj) {
         var attr, attrs, fn, to_update, _results;
         to_update = {
           '_bind': ['addListener', 'bind', 'on'],
           '_trigger': ['fire', 'trigger', 'emit'],
           '_unbind': ['un', 'remove_listener', 'unbind']
         };
+        console.log('instance extend');
         _results = [];
         for (fn in to_update) {
           attrs = to_update[fn];
@@ -95,7 +167,8 @@
               attr = attrs[_i];
               if (obj[attr] != null) {
                 obj['__' + attr] = obj[attr];
-                _results1.push(obj[attr] = this[fn].curry(obj['__' + attr]));
+                console.log("" + attr + " => " + fn);
+                _results1.push(obj[attr] = this.prototype[fn].curry(obj['__' + attr]));
               } else {
                 _results1.push(void 0);
               }
@@ -106,8 +179,11 @@
         return _results;
       };
 
-      Mediator.prototype._bind = function(_super, ev, callback) {
+      Eventable.prototype._bind = function(_super, ev, callback) {
         var condition, conditions;
+        if (!_super) {
+          _super = this.bind;
+        }
         if (typeof ev === 'function') {
           conditions = this._conditions || (this._conditions = []);
           condition = new Condition(ev, callback);
@@ -118,23 +194,33 @@
         }
       };
 
-      Mediator.prototype._trigger = function() {
+      Eventable.prototype._trigger = function() {
         var args, _args, _super,
           _this = this;
         _super = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
+        console.log('scope');
+        console.log(this);
+        if (!_super) {
+          _super = this.trigger;
+        }
         _args = args.slice(0);
-        this._conditions.forEach(function(condition) {
+        (this._conditions || []).forEach(function(condition) {
           return condition.match(_args, function(match) {
             if (match) {
               return condition.call.apply(condition, _args[0], args.slice(1));
             }
           });
         });
-        return _super.apply(this, args);
+        console.log('super');
+        console.log(_super);
+        return _super.apply(null, args);
       };
 
-      Mediator.prototype._unbind = function(_super, ev, callback) {
-        conditions.forEach(function(condition) {
+      Eventable.prototype._unbind = function(_super, ev, callback) {
+        if (!_super) {
+          _super = this.unbind;
+        }
+        (this._conditions || []).forEach(function(condition) {
           if (condition.match_unbind(ev, callback)) {
             return conditions.remove(condition);
           }
@@ -142,32 +228,31 @@
         return _super(ev, callback);
       };
 
-      Mediator.prototype.on = function() {
+      Eventable.prototype.on = function() {
         var args;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        console.log('on');
         console.log(this);
-        return this._bind.apply(this, args);
+        return this._bind.apply(this, [void 0].concat(__slice.call(args)));
       };
 
-      Mediator.prototype.fire = function() {
+      Eventable.prototype.fire = function() {
         var args;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        console.log(this);
-        return this._trigger.apply(this, args);
+        return this._trigger.apply(this, [void 0].concat(__slice.call(args)));
       };
 
-      Mediator.prototype.un = function() {
+      Eventable.prototype.un = function() {
         var args;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
-        console.log(this);
-        return this._unbind.apply(this, args);
+        return this._unbind.apply(this, [void 0].concat(__slice.call(args)));
       };
 
-      return Mediator;
+      return Eventable;
 
-    })(spine.Module);
-    mediator = new Mediator();
-    mediator.Mediator = Mediator;
+    })(SimpleEventable);
+    mediator = new Eventable();
+    mediator.Eventable = Eventable;
     return mediator;
   });
 

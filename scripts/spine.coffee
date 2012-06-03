@@ -66,12 +66,8 @@ class Module
 
   @extend: (obj) ->
     throw('extend(obj) requires obj') unless obj
-    console.log "module extending"
-    console.log this
-    console.log obj
 
     for key, value of obj when key not in moduleKeywords
-      console.log "extending #{key}"
       @[key] = value
     obj.extended?.apply(@)
     this

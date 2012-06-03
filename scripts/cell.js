@@ -12,8 +12,6 @@
 
       __extends(Cell, _super);
 
-      Cell.extend(mediator.Mediator);
-
       function Cell(data) {
         this.id = typeof data === 'number' ? data : data != null ? data.id : void 0;
         this.tokens = {};
@@ -143,7 +141,7 @@
 
       return Cell;
 
-    })(Spine.Module);
+    })(mediator.Eventable);
   });
 
 }).call(this);

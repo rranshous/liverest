@@ -6,7 +6,7 @@
     var handle_server, handle_socket;
     handle_socket = function(socket) {
       var _this = this;
-      mediator.instance_extend(socket);
+      mediator.Eventable.instance_extend(socket);
       socket.on((function(e, d, r) {
         return respond(true);
       }), mediator.fire);

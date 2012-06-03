@@ -7,7 +7,7 @@ define ['mediator'], (mediator) ->
   handle_socket = (socket) ->
 
     # update the socket so that it has better (internal) event support
-    mediator.instance_extend socket
+    mediator.Eventable.instance_extend socket
 
     # when an event comes in, it needs to go through the mediator
     socket.on ((e,d,r) -> respond(true)), mediator.fire
@@ -45,7 +45,6 @@ define ['mediator'], (mediator) ->
 
     # just push sockets to handle_socket as they connect
     server.on 'connection', handle_socket
-
 
   handle_server: handle_server,
   handle_socket: handle_socket
