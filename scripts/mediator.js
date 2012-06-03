@@ -2,7 +2,8 @@
 (function() {
   var __slice = [].slice,
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   define(['spine'], function(spine) {
     var Condition, Eventable, has_super, mediator;
@@ -74,23 +75,46 @@
       };
 
       Eventable.instance_extend = function(obj) {
-        var attr, attrs, fn, to_update, _i, _len;
+        var attr, attrs, fn, key, reassigned, to_update, value, _ref, _results;
         to_update = {
           '_bind': ['addListener', 'bind', 'on'],
           '_trigger': ['fire', 'trigger', 'emit'],
           '_unbind': ['un', 'remove_listener', 'unbind']
         };
-        for (fn in to_update) {
-          attrs = to_update[fn];
-          for (_i = 0, _len = attrs.length; _i < _len; _i++) {
-            attr = attrs[_i];
-            if (obj[attr] != null) {
-              obj['__' + attr] = obj[attr];
-              obj[attr] = this.prototype[fn].curry(obj['__' + attr]);
+        reassigned = [];
+        _ref = new Eventable();
+        for (key in _ref) {
+          value = _ref[key];
+          if (key !== 'included' && key !== 'extended') {
+            if (!(__indexOf.call(reassigned, key) >= 0 || (obj[key] != null))) {
+              console.log("=> " + key);
+              obj[key] = value;
             }
           }
         }
-        return spine.Module.extend.call(obj, new Eventable());
+        console.log("reassigned " + reassigned);
+        _results = [];
+        for (fn in to_update) {
+          attrs = to_update[fn];
+          _results.push((function() {
+            var _i, _len, _results1;
+            _results1 = [];
+            for (_i = 0, _len = attrs.length; _i < _len; _i++) {
+              attr = attrs[_i];
+              if (obj[attr] && !(obj[fn] != null)) {
+                obj['__' + attr] = obj[attr];
+                obj[attr] = obj[fn].curry(obj['__' + attr]);
+                console.log("" + attr + " => " + fn);
+                reassigned.push(attr);
+                _results1.push(reassigned.push('__' + attr));
+              } else {
+                _results1.push(void 0);
+              }
+            }
+            return _results1;
+          })());
+        }
+        return _results;
       };
 
       Eventable.prototype._bind = function(_super, ev, callback) {
@@ -114,6 +138,7 @@
         _super = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];
         console.log(this);
         console.log("trigger: " + args[0] + " => " + args.slice(1));
+        console.log(_super);
         if (!_super) {
           _super = this.trigger;
         }
@@ -129,7 +154,13 @@
             }
           };
           match_args = _args.concat(handle_match);
+          console.log({
+            match_args: match_args
+          });
           return condition.match.apply(condition, match_args);
+        });
+        console.log({
+          trigger_super: _super
         });
         return _super.apply(null, args);
       };
@@ -155,6 +186,7 @@
       Eventable.prototype.fire = function() {
         var args;
         args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+        console.log("fire");
         return this._trigger.apply(this, [void 0].concat(__slice.call(args)));
       };
 

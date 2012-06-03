@@ -8,9 +8,21 @@
       var _this = this;
       console.log('handling socket');
       mediator.Eventable.instance_extend(socket);
-      socket.on((function(e, d, r) {
+      socket.on((function(e, d, respond) {
         return respond(true);
-      }), mediator.fire);
+      }), function(event, data) {
+        console.log({
+          socket_on: [event, data]
+        });
+        if (data != null ? data.__outgoing : void 0) {
+          return;
+        }
+        data.__connection = socket;
+        console.log({
+          firing_socket: socket
+        });
+        return mediator.fire(event, data);
+      });
       return mediator.on(function(event, data, respond) {
         console.log("mediator event check");
         console.log({
@@ -26,10 +38,7 @@
           return respond(true);
         }
       }, function(event, event_data) {
-        event_data.__connection = socket;
-        console.log({
-          firing_socket: socket
-        });
+        event_data.__outgoing = true;
         return socket.fire(event, event_data);
       });
     };
