@@ -4,12 +4,26 @@
   requirejs.config({
     shim: {
       spine: {
-        deps: [],
         exports: 'Spine'
+      },
+      "socket.io": {
+        exports: 'io'
       }
+    },
+    paths: {
+      "socket.io": '/socket.io/socket.io.js'
     }
   });
 
-  requirejs([], function() {});
+  requirejs(['overrides', 'socket.io', 'liverest', 'cell'], function(overries, io, liverest, Cell) {
+    var socket;
+    this.app = {
+      io: io,
+      liverest: liverest,
+      cell: Cell
+    };
+    socket = io.connect('http://localhost');
+    return liverest.add_socketio_socket(socket);
+  });
 
 }).call(this);

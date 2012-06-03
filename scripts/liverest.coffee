@@ -1,7 +1,10 @@
 
 
-define ['socketio_handler'] ->
+define ['socketio_handler'], (socketio_handler) ->
   
-  # add a new socketio 
-  add_socketio_connection: (socketio_connection) =>
-    socketio_handler socketio_connection
+  # add a new socketio server to handle the events for
+  add_socketio_server: socketio_handler.handle_server,
+
+  # add a new socketio socket to handle events for
+  add_socketio_socket: socketio_handler.handle_socket
+

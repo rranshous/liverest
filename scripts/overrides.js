@@ -2,6 +2,8 @@
 (function() {
 
   define(function() {
+    var slice;
+    slice = Array.prototype.slice;
     Array.prototype.remove = function(e) {
       var t, _ref;
       if ((t = this.indexOf(e)) > -1) {
@@ -11,10 +13,10 @@
     Function.prototype.curry = function() {
       var constructor_args, func;
       func = this;
-      constructor_args = arguments.slice(0);
+      constructor_args = slice.call(arguments, 0);
       return function() {
         var func_args;
-        func_args = arguments.slice(0);
+        func_args = slice.call(arguments, 0);
         return func.apply(this, constructor_args.concat(func_args));
       };
     };
