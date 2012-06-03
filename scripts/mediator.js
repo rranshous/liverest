@@ -54,62 +54,43 @@
       Eventable.include(spine.Events);
 
       Eventable.class_extend = function(obj) {
-        var attr, attrs, fn, to_update, _results;
+        var attr, attrs, fn, to_update, _i, _len;
         to_update = {
           '_bind': ['addListener', 'bind', 'on'],
           '_trigger': ['fire', 'trigger', 'emit'],
           '_unbind': ['un', 'remove_listener', 'unbind']
         };
-        _results = [];
         for (fn in to_update) {
           attrs = to_update[fn];
-          _results.push((function() {
-            var _i, _len, _results1;
-            _results1 = [];
-            for (_i = 0, _len = attrs.length; _i < _len; _i++) {
-              attr = attrs[_i];
-              if (obj.prototype[attr]) {
-                obj.prototype['__' + attr] = obj.prototype[attr];
-                _results1.push(obj.prototype[attr] = this.prototype[attr]);
-              } else {
-                _results1.push(void 0);
-              }
+          for (_i = 0, _len = attrs.length; _i < _len; _i++) {
+            attr = attrs[_i];
+            if (obj.prototype[attr]) {
+              obj.prototype['__' + attr] = obj.prototype[attr];
+              obj.prototype[attr] = this.prototype[attr];
             }
-            return _results1;
-          }).call(this));
+          }
         }
-        return _results;
+        return spine.Module.include.call(obj, new Eventable());
       };
 
       Eventable.instance_extend = function(obj) {
-        var attr, attrs, fn, to_update, _results;
-        console.log({
-          instance_extend: obj
-        });
+        var attr, attrs, fn, to_update, _i, _len;
         to_update = {
           '_bind': ['addListener', 'bind', 'on'],
           '_trigger': ['fire', 'trigger', 'emit'],
           '_unbind': ['un', 'remove_listener', 'unbind']
         };
-        _results = [];
         for (fn in to_update) {
           attrs = to_update[fn];
-          _results.push((function() {
-            var _i, _len, _results1;
-            _results1 = [];
-            for (_i = 0, _len = attrs.length; _i < _len; _i++) {
-              attr = attrs[_i];
-              if (obj[attr] != null) {
-                obj['__' + attr] = obj[attr];
-                _results1.push(obj[attr] = this.prototype[fn].curry(obj['__' + attr]));
-              } else {
-                _results1.push(void 0);
-              }
+          for (_i = 0, _len = attrs.length; _i < _len; _i++) {
+            attr = attrs[_i];
+            if (obj[attr] != null) {
+              obj['__' + attr] = obj[attr];
+              obj[attr] = this.prototype[fn].curry(obj['__' + attr]);
             }
-            return _results1;
-          }).call(this));
+          }
         }
-        return _results;
+        return spine.Module.extend.call(obj, new Eventable());
       };
 
       Eventable.prototype._bind = function(_super, ev, callback) {

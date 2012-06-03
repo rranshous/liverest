@@ -37,12 +37,12 @@ define ['spine'], (spine) ->
             obj::['__'+attr] = obj::[attr]
             obj::[attr] = @::[attr]
 
+      # add base methods
+      spine.Module.include.call obj, new Eventable()
+
     # sometimes we already have an instantiated event
     # obj we want to extend, this helps us do that
     @instance_extend: (obj) ->
-
-      console.log
-        instance_extend: obj
 
       to_update = 
         '_bind': ['addListener', 'bind', 'on']
@@ -54,6 +54,9 @@ define ['spine'], (spine) ->
           if obj[attr]?
             obj['__'+attr] = obj[attr]
             obj[attr] = @::[fn].curry(obj['__'+attr])
+
+      # add base methods
+      spine.Module.extend.call obj, new Eventable()
 
     # update bind so that instead of an event name
     # we can define a function which calls a callback
