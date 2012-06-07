@@ -11,24 +11,13 @@
       socket.on((function(e, d, respond) {
         return respond(true);
       }), function(event, data) {
-        console.log({
-          socket_on: [event, data]
-        });
         if (data != null ? data.__outgoing : void 0) {
           return;
         }
         data.__connection = socket;
-        console.log({
-          firing_socket: socket
-        });
         return mediator.fire(event, data);
       });
       return mediator.on(function(event, data, respond) {
-        console.log("mediator event check");
-        console.log({
-          event: event,
-          data: data
-        });
         if (data.id) {
           return socket.get('tracking_cells', function(err, cells) {
             var _ref;

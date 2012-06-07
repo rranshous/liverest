@@ -9,7 +9,9 @@ requirejs.config
     "socket.io": '/socket.io/socket.io.js'
 
 # nothing to see here
-requirejs ['overrides', 'socket.io', 'liverest', 'cell'], (overries, io, liverest, Cell) ->
+requirejs ['overrides', 'socket.io', 'liverest', 'cell'],
+  
+(overries, io, liverest, Cell) ->
 
   # and we should be done
   @app = 

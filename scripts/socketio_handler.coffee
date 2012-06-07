@@ -14,9 +14,6 @@ define ['mediator'], (mediator) ->
     # when an event comes in, it needs to go through the mediator
     socket.on ((e,d,respond) -> respond(true)), (event, data) =>
 
-      console.log
-        socket_on: [event, data]
-
       # if this is an outgoing event, dont process
       return if data?.__outgoing
 
@@ -24,8 +21,6 @@ define ['mediator'], (mediator) ->
       # TODO: use something more generic than connection, something
       #       which signifies it's a proxy for the firing object
       data.__connection = socket
-      console.log
-        firing_socket: socket
       mediator.fire event, data
 
     # when the mediator puts off an event, we need to check if
@@ -35,11 +30,6 @@ define ['mediator'], (mediator) ->
 
       # this function checks if the event is one the socket will care about
       (event, data, respond) =>
-
-        console.log "mediator event check"
-        console.log 
-          event:event,
-          data:data
 
         # check if the data has to do with a cell the socket cares about
         if data.id

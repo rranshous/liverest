@@ -2,7 +2,7 @@
 # global shared cell id counter
 _last_cell_id = 0
 
-define ['spine','mediator'], (spine, mediator) ->
+define ['spine','mediator','cell_helpers'], (spine, mediator, helpers) ->
 
   class Cell extends mediator.Eventable
 
@@ -23,30 +23,14 @@ define ['spine','mediator'], (spine, mediator) ->
       mediator.on 'cell:set_data', @handle_set_data
       mediator.on 'cell:get_data', @handle_get_data
 
+      # hook up with the mediator to see other
+      # cell's init's, that way we can send
+      # them snapshots of our data if they don't
+      # already have it
+
       # if we have sub data (init data) in the data
       # than we're going to set it
       @set_data data.data if data?.data
-
-    fire_set_value: (to_obj, id, key, value, token) ->
-      to_obj.fire 'cell:set_value',
-        id: id,
-        key: key,
-        value: value,
-        token: token
-
-    fire_set_data: (to_obj, id, data, token) ->
-      # let the world know
-      to_obj.fire 'cell:set_data',
-        id: id,
-        data: data,
-        token: token
-
-    @_new_cell_id: ->
-      _last_cell_id += 1
-
-    # token's based on timestamps
-    _new_token_id: ->
-      '' + (new Date().getTime()) + (@id or '')
 
     # sets the cell's value
     # if token is set only sets if given token
@@ -63,14 +47,14 @@ define ['spine','mediator'], (spine, mediator) ->
         return
 
       # generate a new token for this set op
-      token = @tokens[key] = @_new_token_id()
+      token = @tokens[key] = helpers.new_token_id()
 
       # actually set the data
       @_set key, value, =>
 
         # let the world know
         if fire
-          @fire_set_value mediator, @id, key, value, token
+          helpers.fire_set_value mediator, @id, key, value, token
 
         # call back with much success
         callback true, key, value
@@ -79,12 +63,12 @@ define ['spine','mediator'], (spine, mediator) ->
       callback true, key, value
 
     # gets a value from the 
-    get: (key) ->
-      @data[key]
+    get: (key, callback= ->) ->
+      callback @data[key]
 
     # return all the cell's data
-    get_data: ->
-      @data
+    get_data: (callback) ->
+      callback @data
 
     # sets multiple values
     set_data: (data, token, callback= ->) ->
@@ -94,7 +78,7 @@ define ['spine','mediator'], (spine, mediator) ->
         return
 
       # generate token
-      token = @_new_token_id() unless token?
+      token = helpers.new_token_id() unless token?
 
       # keep track of how many set's we've done
       total = data.length
@@ -110,7 +94,7 @@ define ['spine','mediator'], (spine, mediator) ->
             callback true, data
 
           # let the world know
-          @fire_set_data mediator, @id, data, token
+          helpers.fire_set_data mediator, @id, data, token
 
     # clears all the cell's values
     clear: (token, callback= ->) ->
@@ -131,6 +115,8 @@ define ['spine','mediator'], (spine, mediator) ->
       # we removed
       callback(cleared)
 
+    ## event handlers
+
     # handles events we receive about cell updates
     handle_set_value: (data) ->
       # we only pay attention to events which have to do with us
@@ -140,3 +126,31 @@ define ['spine','mediator'], (spine, mediator) ->
     handle_set_data: (data) ->
       return unless @id == data.id
       @set_data data.data, data.token
+
+    # handles other cell's init events
+    # the init event comes w/ the new cell's
+    # data, we need to respond with set value
+    # events for each key / value that we have
+    # with a newer token
+    handle_init: (data) ->
+      return unless @id == data.id
+
+      # if the event has a source obj lets respond
+      # to that directly. It will propogate any new data
+      # to other clients it's connected to via it's sets
+      resp_obj = data.__source or mediator
+
+      # go through the data the cell is aware of
+      for k, v of data.data
+        # try and set each for our self. anything
+        # we can successfully set they had a newer
+        # value. anything we can not we need to tell
+        # them about
+        @set k, v, data.token, true, (success, key, value, token) =>
+          unless success
+            # fire a responding set value with our value for the 
+            # key and it's token
+            @get key, (my_value) =>
+              helpers.fire_set_data resp_obj, data.id, 
+                                    key, my_value, @tokens[key]
+

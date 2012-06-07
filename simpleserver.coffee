@@ -9,7 +9,9 @@ requirejs.config
       deps: [],
       exports: 'Spine'
 
-requirejs ['overrides', 'socket.io', 'express', 'liverest' ], (overrides, io, express, liverest) ->
+requirejs ['overrides', 'socket.io', 'express', 'liverest' ], 
+  
+(overrides, io, express, liverest) ->
 
   PORT = 8080 # what port to host on
 
