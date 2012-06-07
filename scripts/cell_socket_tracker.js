@@ -14,8 +14,8 @@
       });
     });
     add_tracking = function(event_data) {
-      if (event_data.__connection) {
-        return socket_cell_tracker.track(event_data.id, event_data.__connection);
+      if (event_data.__source) {
+        return socket_cell_tracker.track(event_data.id, event_data.__source);
       }
     };
     mediator.on('cell:set_value', add_tracking);

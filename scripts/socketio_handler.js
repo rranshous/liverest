@@ -14,7 +14,7 @@
         if (data != null ? data.__outgoing : void 0) {
           return;
         }
-        data.__connection = socket;
+        data.__source = socket;
         return mediator.fire(event, data);
       });
       return mediator.on(function(event, data, respond) {

@@ -6,7 +6,7 @@
 
   _last_cell_id = 0;
 
-  define(['spine', 'mediator'], function(spine, mediator) {
+  define(['spine', 'mediator', 'cell_helpers'], function(spine, mediator, helpers) {
     var Cell;
     return Cell = (function(_super) {
 
@@ -25,31 +25,6 @@
         }
       }
 
-      Cell.prototype.fire_set_value = function(to_obj, id, key, value, token) {
-        return to_obj.fire('cell:set_value', {
-          id: id,
-          key: key,
-          value: value,
-          token: token
-        });
-      };
-
-      Cell.prototype.fire_set_data = function(to_obj, id, data, token) {
-        return to_obj.fire('cell:set_data', {
-          id: id,
-          data: data,
-          token: token
-        });
-      };
-
-      Cell._new_cell_id = function() {
-        return _last_cell_id += 1;
-      };
-
-      Cell.prototype._new_token_id = function() {
-        return '' + (new Date().getTime()) + (this.id || '');
-      };
-
       Cell.prototype.set = function(key, value, token, fire, callback) {
         var _this = this;
         if (fire == null) {
@@ -64,10 +39,10 @@
           callback(false, key, value);
           return;
         }
-        token = this.tokens[key] = this._new_token_id();
+        token = this.tokens[key] = helpers.new_token_id();
         return this._set(key, value, function() {
           if (fire) {
-            _this.fire_set_value(mediator, _this.id, key, value, token);
+            helpers.fire_set_value(mediator, _this.id, key, value, token);
           }
           return callback(true, key, value);
         });
@@ -80,12 +55,15 @@
         return callback(true, key, value);
       };
 
-      Cell.prototype.get = function(key) {
-        return this.data[key];
+      Cell.prototype.get = function(key, callback) {
+        if (callback == null) {
+          callback = function() {};
+        }
+        return callback(this.data[key]);
       };
 
-      Cell.prototype.get_data = function() {
-        return this.data;
+      Cell.prototype.get_data = function(callback) {
+        return callback(this.data);
       };
 
       Cell.prototype.set_data = function(data, token, callback) {
@@ -98,7 +76,7 @@
           return;
         }
         if (token == null) {
-          token = this._new_token_id();
+          token = helpers.new_token_id();
         }
         total = data.length;
         done = 0;
@@ -110,7 +88,7 @@
             if (total === done) {
               callback(true, data);
             }
-            return _this.fire_set_data(mediator, _this.id, data, token);
+            return helpers.fire_set_data(mediator, _this.id, data, token);
           }));
         }
         return _results;
@@ -148,6 +126,28 @@
           return;
         }
         return this.set_data(data.data, data.token);
+      };
+
+      Cell.prototype.handle_init = function(data) {
+        var k, resp_obj, v, _ref, _results,
+          _this = this;
+        if (this.id !== data.id) {
+          return;
+        }
+        resp_obj = data.__source || mediator;
+        _ref = data.data;
+        _results = [];
+        for (k in _ref) {
+          v = _ref[k];
+          _results.push(this.set(k, v, data.token, true, function(success, key, value, token) {
+            if (!success) {
+              return _this.get(key, function(my_value) {
+                return helpers.fire_set_data(resp_obj, data.id, key, my_value, _this.tokens[key]);
+              });
+            }
+          }));
+        }
+        return _results;
       };
 
       return Cell;
