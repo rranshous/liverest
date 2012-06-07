@@ -20,7 +20,7 @@ define ['mediator'], (mediator) ->
       # refire the event through the mediator w/ the socket in the data
       # TODO: use something more generic than connection, something
       #       which signifies it's a proxy for the firing object
-      data.__connection = socket
+      data.__source = socket
       mediator.fire event, data
 
     # when the mediator puts off an event, we need to check if
